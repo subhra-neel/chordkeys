@@ -57,7 +57,7 @@ function parseMidi(buf){
  if(u32()!==0x4d546864)throw 0;u32();u16();const nt=u16(),div=u16();
  const ev=[],tm=[[0,500000]];
  for(let t=0;t<nt;t++){
-  if(u32()!==0x4d54726b)break;const end=p+u32();let tick=0,run=0;
+  if(u32()!==0x4d54726b)break;const len=u32(),end=p+len;let tick=0,run=0;
   while(p<end){tick+=vl();let s=d.getUint8(p);
    if(s===255){p++;const ty=d.getUint8(p++),l=vl();if(ty===81)tm.push([tick,d.getUint8(p)<<16|d.getUint8(p+1)<<8|d.getUint8(p+2)]);p+=l}
    else if(s===240||s===247){p++;p+=vl()}
@@ -103,16 +103,18 @@ function build(notes){
    g.ns.forEach(x=>x.h=h)}}
  const cs=[];
  for(const g of gs){let c=cs[cs.length-1];if(c&&g.t-c.t<=.06)c.gs.push(g);else{c={t:g.t,gs:[g]};cs.push(c)}}
- for(const c of cs){const all=c.gs.flatMap(g=>g.ns);c.p=all.map(n=>n.n);c.name=chordName(c.p);c.end=Math.max(...all.map(n=>n.e))}
+ for(const c of cs){const all=c.gs.flatMap(g=>g.ns);c.p=all.map(n=>n.n);c.name=(all.length==2&&c.gs.length>1)?null:chordName(c.p);c.end=Math.max(...all.map(n=>n.e))}
 
  cs.forEach((c,i)=>c.gs.forEach(g=>g.ci=i));cs.arps=[];
  for(const h of [0,1]){const hg=gs.filter(g=>g.h==h);let i=0;
-  while(i<hg.length){let hit=0;
-   for(let j=Math.min(i+7,hg.length-1);j>=i+2&&!hit;j--){const w=hg.slice(i,j+1);
-    if(w.some(g=>g.ns.length>1)||w[j].t-w[0].t>1.5)continue;
-    const q=chordName(w.map(g=>g.ns[0].n));
-    if(q){cs.arps.push({h,a:w[0].ci,b:w[j].ci,name:q});hit=j}}
-   i=hit?hit+1:i+1}}
+  while(i<hg.length){let end=-1,q=null,set=null;
+   for(let j=i+2;j<Math.min(i+8,hg.length);j++){const w=hg.slice(i,j+1);
+    if(w.some(g=>g.ns.length>1)||w[w.length-1].t-w[0].t>1.5)break;
+    const ps=w.map(g=>g.ns[0].n),pc=new Set(ps.map(x=>x%12)),nmq=pc.size>=3?chordName(ps):null;
+    if(nmq){q=nmq;set=pc;end=j;break}}
+   if(end<0){i++;continue}
+   while(end+1<hg.length&&end+1<i+8&&hg[end+1].ns.length==1&&hg[end+1].t-hg[i].t<=1.5&&set.has(hg[end+1].ns[0].n%12))end++;
+   cs.arps.push({h,a:hg[i].ci,b:hg[end].ci,name:q});i=end+1}}
  return cs}
 
 /* ---------- state ---------- */
