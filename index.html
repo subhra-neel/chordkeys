@@ -28,8 +28,9 @@ canvas{display:block;background:var(--card);border-radius:12px;margin-bottom:8px
 #upd{position:fixed;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom,0px));z-index:20;display:flex;gap:12px;align-items:center;justify-content:space-between;padding:10px 14px;border-radius:12px;background:var(--fg);color:var(--bg)}
 #upd[hidden]{display:none}
 #upd button{background:var(--lh);color:#fff;border-color:var(--lh)}
+#upd #uplater{background:transparent;color:var(--bg);border-color:var(--mut)}
 </style></head><body><main>
-<h1>ChordKeys</h1><div id="st">Tap the keys, or connect a MIDI keyboard.</div>
+<h1>ChordKeys <small id="vh" style="font:12px system-ui;color:var(--mut)"></small></h1><div id="st">Tap the keys, or connect a MIDI keyboard.</div>
 <div class="bar">
 <label class="btn">Open MIDI file<input id="f" type="file" accept=".mid,.midi" hidden></label>
 <button id="demo">Load demo</button><button id="pp">Play</button><button id="rw">Restart</button>
@@ -43,7 +44,8 @@ canvas{display:block;background:var(--card);border-radius:12px;margin-bottom:8px
 <button id="la">Set loop start</button><button id="lb">Set loop end</button><button id="lp">Loop: off</button><button id="sw">Swap hands</button>
 </div>
 </main>
-<div id="upd" hidden><span>A new version is ready.</span><button>Update now</button></div>
+<p id="vf" style="color:var(--mut);font-size:13px;margin:4px 0 12px"><span id="vt">Version …</span> <button id="chk">Check for updates</button> <span id="upmsg"></span></p>
+<div id="upd" hidden role="status"><span id="upt">A new version is ready.</span><span style="display:flex;gap:8px"><button id="uplater">Later</button><button id="upgo">Update now</button></span></div>
 <script>
 const $=id=>document.getElementById(id);
 const NN=['C','C♯','D','E♭','E','F','F♯','G','A♭','A','B♭','B'],LN=['C','C♯','D','D♯','E','F','F♯','G','G♯','A','A♯','B'];
@@ -224,12 +226,30 @@ if(navigator.requestMIDIAccess)navigator.requestMIDIAccess().then(a=>{
   if(k)$('st').textContent='MIDI keyboard connected.'};hook();a.onstatechange=hook}).catch(()=>{});
 addEventListener('resize',resize);resize();demo();requestAnimationFrame(frame);
 </script><script>
-if('serviceWorker' in navigator){addEventListener('load',()=>{
- navigator.serviceWorker.register('./sw.js').then(reg=>{
-  const show=w=>{const b=document.getElementById('upd');b.hidden=false;b.querySelector('button').onclick=()=>w.postMessage('SKIP_WAITING')};
-  if(reg.waiting&&navigator.serviceWorker.controller)show(reg.waiting);
-  reg.addEventListener('updatefound',()=>{const n=reg.installing;n.addEventListener('statechange',()=>{if(n.state==='installed'&&navigator.serviceWorker.controller)show(n)})});
-  document.addEventListener('visibilitychange',()=>{if(!document.hidden)reg.update()});reg.update()});
- let r=0;navigator.serviceWorker.addEventListener('controllerchange',()=>{if(r)return;r=1;location.reload()})})}
+(()=>{const $=id=>document.getElementById(id);
+if(!('serviceWorker' in navigator)){$('vt').textContent='Updates need a secure (https) page.';$('chk').hidden=true;return}
+const ask=(w,m)=>new Promise(r=>{if(!w)return r(null);const c=new MessageChannel();c.port1.onmessage=e=>r(e.data);try{w.postMessage(m,[c.port2])}catch(x){return r(null)}setTimeout(()=>r(null),2000)});
+const showVer=v=>{if(v){$('vh').textContent='v'+v;$('vt').textContent='Version '+v}};
+const banner=w=>ask(w,'GET_VERSION').then(v=>{
+ $('upt').textContent=v?'Version '+v+' is ready to install.':'A new version is ready to install.';
+ const b=$('upd'),go=$('upgo');b.hidden=false;go.disabled=false;go.textContent='Update now';
+ go.onclick=()=>{go.disabled=true;go.textContent='Updating…';w.postMessage('SKIP_WAITING')};
+ $('uplater').onclick=()=>{b.hidden=true}});
+const hadCtl=!!navigator.serviceWorker.controller;
+addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').then(reg=>{
+ navigator.serviceWorker.ready.then(r=>ask(r.active,'GET_VERSION')).then(showVer);
+ if(reg.waiting&&navigator.serviceWorker.controller)banner(reg.waiting);
+ reg.addEventListener('updatefound',()=>{const n=reg.installing;if(!n)return;
+  n.addEventListener('statechange',()=>{if(n.state==='installed'&&navigator.serviceWorker.controller)banner(n)})});
+ const check=manual=>{if(manual)$('upmsg').textContent='Checking…';
+  return reg.update().then(()=>{if(!manual)return;
+   setTimeout(()=>{$('upmsg').textContent=(reg.installing||reg.waiting)?'Update found.':'You’re up to date.'},800)})
+  .catch(()=>{if(manual)$('upmsg').textContent='Couldn’t check. Are you online?'})};
+ $('chk').onclick=()=>check(true);
+ check(false);setInterval(()=>check(false),30*60*1000);
+ document.addEventListener('visibilitychange',()=>{if(!document.hidden)check(false)})
+}).catch(()=>{$('vt').textContent='Offline mode unavailable.'}));
+let rl=0;navigator.serviceWorker.addEventListener('controllerchange',()=>{if(!hadCtl||rl)return;rl=1;location.reload()})
+})();
 </script>
 </body></html>
