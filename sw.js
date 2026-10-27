@@ -1,5 +1,5 @@
 // RELEASE STEPS: change VERSION below (e.g. '3.2'), commit, push. Installed copies will prompt to update.
-const VERSION='3.1';
+const VERSION='3.4';
 const CACHE='chordkeys-'+VERSION;
 const FILES=['./','./index.html','./manifest.webmanifest','./icon-192.png','./icon-512.png'];
 self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(FILES))));
