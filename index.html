@@ -41,7 +41,10 @@ tr{cursor:pointer}
 #upd[hidden]{display:none}
 #upd button{background:var(--lh);color:#fff;border-color:var(--lh)}
 #upd #uplater{background:transparent;color:var(--bg);border-color:var(--mut)}
-button,.btn,select{min-height:44px}
+button,.btn,select,input[type=text],input[type=number]{min-height:44px}
+textarea,input[type=text],input[type=number]{font:inherit;font-size:14px;padding:8px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--fg);box-sizing:border-box}
+textarea{width:100%;font-family:ui-monospace,Menlo,Consolas,monospace;resize:vertical}
+#cpv{font-family:ui-monospace,Menlo,Consolas,monospace}
 .btn{display:inline-flex;align-items:center}
 .primary{background:var(--lh);color:#fff;border-color:var(--lh);font-weight:600;min-width:84px}
 .grp{display:inline-flex;align-items:center;gap:6px;flex-wrap:nowrap;white-space:nowrap}
@@ -61,10 +64,10 @@ h4{margin:14px 0 4px;font-size:14px}
 <div id="st" role="status" aria-live="polite">Tap the keys, or connect a MIDI keyboard.</div>
 <div id="kbs" style="display:flex;gap:8px;align-items:center;margin:6px 0;flex-wrap:wrap"><span id="dot" style="width:10px;height:10px;border-radius:50%;background:var(--mut);flex:none"></span><span id="kbt">Looking for a keyboard…</span><span id="ln" style="margin-left:auto;font-size:13px;color:var(--mut)"></span><button id="inst" hidden title="Add ChordKeys to your home screen">Install app</button></div>
 <div id="welcome" hidden><b>Welcome to ChordKeys</b>
-<ol><li>Plug in your keyboard by USB, or just tap the on-screen keys.</li><li>Press <b>Open MIDI</b> (or <b>Load demo</b>). Chords and finger numbers appear above the keys.</li><li>Turn on <b>Wait for me</b> and play each chord as it lights up, or try <b>Practice and progress</b> below.</li></ol>
+<ol><li>Plug in your keyboard by USB, or just tap the on-screen keys.</li><li>Press <b>Open file</b> (a MIDI or MusicXML score), <b>Type chords</b>, or <b>Load demo</b>. Chords and finger numbers appear above the keys.</li><li>Turn on <b>Wait for me</b> and play each chord as it lights up, or try <b>Practice and progress</b> below.</li></ol>
 <button id="wgo" class="primary">Got it</button> <button id="whp">Open help</button></div>
 <div class="bar">
-<label class="btn" title="Choose a .mid file from your device">Open MIDI<input id="f" type="file" accept=".mid,.midi" hidden></label>
+<label class="btn" title="Choose a MIDI (.mid), MusicXML (.musicxml, .mxl) or chord text (.txt) file">Open file<input id="f" type="file" accept=".mid,.midi,.musicxml,.xml,.mxl,.txt,.cho,.crd,.pro,.chordpro" hidden></label><button id="tch" title="Type or paste chords and get notation">Type chords</button>
 <button id="demo">Load demo</button><button id="pp" class="primary" title="Play or pause (space bar)">Play</button><button id="rw" title="Back to the start (R)">Restart</button><select id="rc" hidden aria-label="Recent songs"></select>
 </div>
 <div class="bar"><button id="pa" title="Play the song yourself with a metronome and get scored">Play along and score</button><select id="sl" aria-label="Strictness"><option value="1">Strictness: Beginner</option><option value="2" selected>Strictness: Elementary</option><option value="3">Strictness: Intermediate</option><option value="4">Strictness: Advanced</option><option value="5">Strictness: Master</option></select><button id="an">Analyse last performance</button></div>
@@ -74,8 +77,21 @@ h4{margin:14px 0 4px;font-size:14px}
 <button id="wait" title="The song waits until you play the chord">Wait for me: off</button>
 <button id="mt" title="Click track (M)">Metronome: off</button>
 <select id="spd" aria-label="Speed"><option value=".25">25% speed</option><option value=".5">50% speed</option><option value=".6">60% speed</option><option value=".75">75% speed</option><option value=".9">90% speed</option><option value="1" selected>100% speed</option><option value="1.1">110% speed</option><option value="1.25">125% speed</option></select>
-<button id="vw" class="on">Chord view</button><button id="nn">Note names: off</button>
+<button id="vw" class="on">Chord view</button><button id="nn">Note names: off</button><select id="ntn" aria-label="Note naming" title="Name notes in Western letters, Indian sargam, or both"><option value="west">Western (C D E)</option><option value="sargam">Sargam (S R G)</option><option value="both">Both (C and S)</option></select><select id="sa" aria-label="Which key is Sa" title="Sa follows the key of the piece, or lock it to one key" hidden><option value="auto">Sa = song key</option><option value="0">Sa = C</option><option value="1">Sa = C♯</option><option value="2">Sa = D</option><option value="3">Sa = E♭</option><option value="4">Sa = E</option><option value="5">Sa = F</option><option value="6">Sa = F♯</option><option value="7">Sa = G</option><option value="8">Sa = A♭</option><option value="9">Sa = A</option><option value="10">Sa = B♭</option><option value="11">Sa = B</option></select><button id="swf" hidden title="Short letters or full swara names">Short: S R G</button>
 </div>
+<details id="cho"><summary>Type or paste chords</summary>
+<div class="sm" style="margin:6px 0">Paste a chord chart from Ultimate Guitar or Songsterr, or type your own. Lyrics are ignored. Use <b>|</b> to mark bars, for example <b>| C | Am7 | Dm7 G7 | C |</b>. Without bar lines, each chord line is split by the &ldquo;Chords per bar&rdquo; setting. <b>x2</b> repeats a line and <b>%</b> repeats the last chord.</div>
+<textarea id="ct" rows="7" spellcheck="false" autocapitalize="off" autocomplete="off" aria-label="Chords" placeholder="C   G   Am  F&#10;| C | Am7 | Dm7 G7 | C |"></textarea>
+<div class="bar" style="margin:6px 0">
+<label class="grp">Name <input id="cn" type="text" maxlength="40" placeholder="My chords" style="width:150px"></label>
+<label class="grp">Tempo <input id="cb" type="number" min="30" max="240" value="90" style="width:70px"> BPM</label>
+<select id="csg" aria-label="Time signature"><option value="4/4">4/4</option><option value="3/4">3/4</option><option value="2/4">2/4</option></select>
+<select id="cpr" aria-label="Chords per bar"><option value="1">1 chord per bar</option><option value="2">2 chords per bar</option><option value="beat">1 chord per beat</option></select>
+<select id="cy" aria-label="Playing style"></select>
+</div>
+<div class="bar" style="margin:6px 0"><button id="cgo" class="primary">Build notation</button><button id="cex">Example</button><button id="cclr">Clear</button><button id="cmid" hidden>Download MIDI</button></div>
+<pre id="cpv" class="sm" style="white-space:pre-wrap;margin:4px 0"></pre>
+</details>
 <details id="tools"><summary>Loop, bars and chord sheet</summary>
 <div class="bar"><button id="la">Set loop start</button><button id="lb">Set loop end</button><button id="lp">Loop: off</button><select id="lg" aria-label="Loop gap"><option value="0">Loop gap: none</option><option value="1">Loop gap: 1 s</option><option value="2">Loop gap: 2 s</option><option value="4">Loop gap: 4 s</option></select></div>
 <div class="bar"><span class="grp"><input id="gb" type="number" min="1" inputmode="numeric" placeholder="Bar" aria-label="Bar number" style="width:64px;font:inherit;font-size:14px;padding:8px;min-height:44px;box-sizing:border-box;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--fg)"><button id="gob">Go to bar</button></span><button id="sw" title="Swap which notes are shown for each hand">Swap hands</button><button id="cs">Chord sheet</button><button id="csd">Download chord sheet</button></div>
@@ -105,9 +121,10 @@ h4{margin:14px 0 4px;font-size:14px}
 <h4>Reading the screen</h4>
 <ul><li><span class="key" style="background:var(--rh)"></span>Amber is the right hand, <span class="key" style="background:var(--lh)"></span>teal is the left hand, <span class="key" style="background:var(--ok)"></span>green is a key you are pressing.</li>
 <li>Numbers are fingers: 1 is the thumb, 5 is the little finger. Chord names are above the staff. Red notes are outside your keyboard.</li>
+<li><b>Sargam:</b> choose <b>Sargam</b> or <b>Both</b> in the note-naming menu. Capitals are shuddha (S R G M P D N), lower case is komal (r g d n), and M̀ with a ` on top is tivra Ma. A dot below is mandra saptak (low), no dot is madhya, a dot above is taar (high). Madhya Sa is the Sa nearest middle C. Sa follows the key of the piece, or lock it with the <b>Sa =</b> menu. Turn on <b>Note names</b> to label every key, not just Sa.</li>
 <li>Tap the staff to jump. Space plays or pauses, the arrow keys step through chords, R restarts and M switches the metronome (when you use a physical keyboard).</li></ul>
-<h4>Getting a MIDI file</h4>
-<p>In MuseScore choose File, Export, then MIDI. For the best chord names export just the piano part. You can also drag a .mid file onto this page.</p>
+<h4>Getting a score or chords</h4>
+<p><b>MuseScore:</b> on musescore.com download the MIDI or MusicXML version. In the MuseScore app use File, Export. Open the file with <b>Open file</b>, or drag it onto this page. MusicXML keeps repeats as written once, and any chord symbols in the score become the chord names.</p><p><b>Songsterr:</b> its files are Guitar Pro. Open them in MuseScore Studio (free), export MIDI or MusicXML, then open that here. Or copy the chords into <b>Type chords</b>.</p><p><b>Ultimate Guitar:</b> copy the chord chart and paste it into <b>Type chords</b>. You can also save it as a .txt file and open it. Capo, tuning and lyrics lines are skipped. A chart is a guide, so check the bars in the preview.</p><p><b>PDF scores</b> cannot be read, because they are pictures of the music.</p>
 <h4>Keyboard not detected?</h4>
 <ul><li>Use Chrome, Edge or Opera. Safari and iPad browsers cannot use USB MIDI.</li><li>Plug the keyboard in first, then open or reload the app. Use an OTG adapter on a tablet.</li><li>When the browser asks to use MIDI devices, choose Allow. If you blocked it, change it in the site settings.</li><li>Prefer USB to Bluetooth: Bluetooth adds delay that makes your timing look late.</li></ul>
 <h4>No sound?</h4>
@@ -122,6 +139,20 @@ h4{margin:14px 0 4px;font-size:14px}
 const $=id=>document.getElementById(id);
 const NN=['C','C♯','D','E♭','E','F','F♯','G','A♭','A','B♭','B'],LN=['C','C♯','D','D♯','E','F','F♯','G','G♯','A','A♯','B'];
 const nm=n=>LN[n%12]+(Math.floor(n/12)-1),BLK=[1,3,6,8,10];
+/* Sargam: uppercase shuddha, lowercase komal, M with ` for tivra Ma. Dot below = mandra, dot above = taar. */
+let ntn='west',saSel='auto',swFull=false;
+const SW=['S','r','R','g','G','M','M\u0300','P','d','D','n','N'],SWF=['Sa','re','Re','ga','Ga','Ma','M\u0300a','Pa','dha','Dha','ni','Ni'];
+const saPc=()=>saSel==='auto'?selKey().r:+saSel;
+function swParts(n){const sa=saPc(),ms=60+((sa+6)%12)-6,i=((n-sa)%12+12)%12;return{b:(swFull?SWF:SW)[i],i,o:Math.floor((n-ms)/12)}}
+function sw(n,noOct){const p=swParts(n),o=noOct?0:p.o,m=o<0?(o<-1?'\u0324':'\u0323'):o>0?(o>1?'\u0308':'\u0307'):'',k=p.b.charAt(1)==='\u0300'?2:1;return p.b.slice(0,k)+m+p.b.slice(k)}
+const nmD=n=>ntn==='west'?nm(n):ntn==='sargam'?sw(n):nm(n)+' ('+sw(n)+')';
+/* draw a swara on a canvas: the tivra mark and saptak dots are drawn by hand so they stay clear at small sizes */
+function swDraw(ctx,n,x,y,px,align){const p=swParts(n),t=p.b.replace('\u0300','');ctx.font=(p.i===0||p.i===7?'700 ':'')+px+'px system-ui';
+ const tw=ctx.measureText(t).width,fw=ctx.measureText(t.charAt(0)).width,x0=align==='center'?x-tw/2:align==='right'?x-tw:x,cx=x0+fw/2;
+ ctx.textAlign='left';ctx.fillText(t,x0,y);let top=y-px*.78;
+ if(p.i===6){ctx.save();ctx.strokeStyle=ctx.fillStyle;ctx.lineWidth=Math.max(1,px*.12);ctx.lineCap='round';ctx.beginPath();ctx.moveTo(cx-px*.22,top-px*.32);ctx.lineTo(cx+px*.12,top-px*.08);ctx.stroke();ctx.restore();top-=px*.42}
+ const c=Math.min(2,Math.abs(p.o)),r=Math.max(1,px*.11);
+ for(let k=0;k<c;k++){const dy=p.o>0?top-px*.12-k*px*.3:y+px*.3+k*px*.3;ctx.beginPath();ctx.arc(cx,dy,r,0,7);ctx.fill()}}
 const DB=[
 ['','Major',[0,4,7]],['m','Minor',[0,3,7]],['7','Dominant 7th',[0,4,7,10]],['maj7','Major 7th',[0,4,7,11]],['m7','Minor 7th',[0,3,7,10]],
 ['sus4','Suspended 4th',[0,5,7]],['sus2','Suspended 2nd',[0,2,7]],['dim','Diminished',[0,3,6]],['aug','Augmented',[0,4,8]],['6','Major 6th',[0,4,7,9]],
@@ -136,11 +167,11 @@ function parseMidi(buf){
  const d=new DataView(buf);let p=0;const u32=()=>{const v=d.getUint32(p);p+=4;return v},u16=()=>{const v=d.getUint16(p);p+=2;return v};
  const vl=()=>{let v=0,b;do{b=d.getUint8(p++);v=v<<7|b&127}while(b&128);return v};
  if(u32()!==0x4d546864)throw 0;u32();u16();const nt=u16(),div=u16();
- const ev=[],tm=[[0,500000]],ts=[],nms={};
+ const ev=[],tm=[[0,500000]],ts=[],nms={},mk=[];
  for(let t=0;t<nt;t++){
   if(u32()!==0x4d54726b)break;const len=u32(),end=p+len;let tick=0,run=0;
   while(p<end){tick+=vl();let s=d.getUint8(p);
-   if(s===255){p++;const ty=d.getUint8(p++),l=vl();if(ty===81)tm.push([tick,d.getUint8(p)<<16|d.getUint8(p+1)<<8|d.getUint8(p+2)]);else if(ty===88)ts.push([tick,d.getUint8(p),2**d.getUint8(p+1)]);else if(ty===3)nms[t]=String.fromCharCode(...new Uint8Array(buf,p,Math.min(l,40)));p+=l}
+   if(s===255){p++;const ty=d.getUint8(p++),l=vl();if(ty===81)tm.push([tick,d.getUint8(p)<<16|d.getUint8(p+1)<<8|d.getUint8(p+2)]);else if(ty===88)ts.push([tick,d.getUint8(p),2**d.getUint8(p+1)]);else if(ty===3)nms[t]=String.fromCharCode(...new Uint8Array(buf,p,Math.min(l,40)));else if((ty===6||ty===1)&&l>3&&l<60){const tx=String.fromCharCode(...new Uint8Array(buf,p,l));if(tx.startsWith('ck:'))mk.push([tick,tx.slice(3)])}p+=l}
    else if(s===240||s===247){p++;p+=vl()}
    else{if(s&128){run=s;p++}else s=run;const hi=s>>4,a=d.getUint8(p++),b=(hi===12||hi===13)?0:d.getUint8(p++);
     if((s&15)!==9){if(hi===9&&b>0)ev.push({tick,tr:t*16+(s&15),n:a,on:1,k:t+'-'+(s&15)+'-'+a});else if(hi===8||hi===9)ev.push({tick,tr:t*16+(s&15),n:a,on:0,k:t+'-'+(s&15)+'-'+a})}}}
@@ -155,7 +186,7 @@ function parseMidi(buf){
  for(let i=0;i<ts.length;i++){const[st,nn,dd]=ts[i],en=i+1<ts.length?ts[i+1][0]:maxTick+1,bl=div*4*nn/dd,bt=div*4/dd;
   for(let k=st;k<en&&bars.length<4000;k+=bl)bars.push(t2s(k));
   for(let k=st;k<en&&beats.length<30000;k+=bt){const q=(k-st)/bl;beats.push([t2s(k),Math.abs(q-Math.round(q))<1e-6?1:0])}}
- notes.bars=bars;notes.beats=beats;notes.names=nms;return notes}
+ notes.bars=bars;notes.beats=beats;notes.names=nms;notes.marks=mk.map(([k,x])=>[t2s(k),x]).sort((a,b)=>a[0]-b[0]);return notes}
 
 /* ---------- chord naming ---------- */
 function analyze(p){const pcs=[...new Set(p.map(x=>x%12))];if(pcs.length<2)return null;
@@ -177,6 +208,7 @@ function handMap(notes){const m={};for(const n of notes)(m[n.tr]=m[n.tr]||[]).pu
  const ks=Object.keys(m);if(ks.length<2)return null;
  const av=ks.map(k=>[k,m[k].reduce((a,b)=>a+b,0)/m[k].length]).sort((a,b)=>a[1]-b[1]),o={};
  av.forEach(([k],i)=>o[k]=i>=av.length/2?1:0);return o}
+const mkAt=t=>{let k=-1;for(let q=0;q<songMarks.length;q++){if(songMarks[q][0]<=t+.03)k=q;else break}return k};
 function build(notes){
  notes.sort((a,b)=>a.s-b.s||a.n-b.n);const gs=[],hm=handMap(notes.filter(n=>!partMode[n.tr]||partMode[n.tr]==='auto')),hd=n=>forceHand!=null?forceHand:(partMode[n.tr]==='rh'?1:partMode[n.tr]==='lh'?0:(hm?hm[n.tr]:((n.o??n.n)>=60?1:0)))^(swap?1:0);
  for(const h of [0,1]){let c=null;
@@ -222,11 +254,11 @@ function build(notes){
  for(const h of [0,1]){const hg=gs.filter(g=>g.h==h);let i=0;
   while(i<hg.length){let end=-1,q=null,set=null;
    for(let j=i+2;j<Math.min(i+8,hg.length);j++){const w=hg.slice(i,j+1);
-    if(w.some(g=>g.ns.length>1)||w[w.length-1].t-w[0].t>1.5)break;
+    if(w.some(g=>g.ns.length>1)||w[w.length-1].t-w[0].t>1.5||(songMarks.length&&mkAt(w[w.length-1].t)!==mkAt(w[0].t)))break;
     const ps=w.map(g=>g.ns[0].n),pc=new Set(ps.map(x=>x%12)),nmq=pc.size>=3?chordName(ps):null;
     if(nmq){q=nmq;set=pc;end=j;break}}
    if(end<0){i++;continue}
-   while(end+1<hg.length&&end+1<i+8&&hg[end+1].ns.length==1&&hg[end+1].t-hg[i].t<=1.5&&set.has(hg[end+1].ns[0].n%12))end++;
+   while(end+1<hg.length&&end+1<i+8&&hg[end+1].ns.length==1&&hg[end+1].t-hg[i].t<=1.5&&set.has(hg[end+1].ns[0].n%12)&&(!songMarks.length||mkAt(hg[end+1].t)===mkAt(hg[i].t)))end++;
    cs.arps.push({h,a:hg[i].ci,b:hg[end].ci,name:q});i=end+1}}
  return cs}
 
@@ -249,7 +281,7 @@ async function wake(on){try{if(on&&!wl&&navigator.wakeLock){wl=await navigator.w
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&playing)wake(true)});
 function setSong(notes,opt){forceHand=opt&&opt.fh!=null?opt.fh:null;ex=opt&&opt.ex||null;exActive=false;exRes='';loadedId=opt&&opt.ex?opt.ex.id:'';
  if(!notes.length){$('st').textContent='No piano notes found in that file. It may contain only drums. Try another file, or export a piano part.';return}
- raw=notes.map(n=>({...n,o:n.n}));partMode={};songBars=notes.bars||[];songNames=notes.names||{};songBeats=notes.beats&&notes.beats.length?notes.beats:(()=>{const e=raw.reduce((m,n)=>Math.max(m,n.e),0),a=[];for(let i=0;i*.6<=e+1&&i<30000;i++)a.push([i*.6,i%4==0?1:0]);return a})();partsRender();tsm=0;A=B=-1;stop();apply();seek(0);lastCur=-1;
+ raw=notes.map(n=>({...n,o:n.n}));partMode={};songBars=notes.bars||[];songNames=notes.names||{};songMarks=notes.marks||[];songBeats=notes.beats&&notes.beats.length?notes.beats:(()=>{const e=raw.reduce((m,n)=>Math.max(m,n.e),0),a=[];for(let i=0;i*.6<=e+1&&i<30000;i++)a.push([i*.6,i%4==0?1:0]);return a})();partsRender();tsm=0;A=B=-1;stop();apply();seek(0);lastCur=-1;
  $('st').textContent=cols.length+' positions, '+cols.filter(c=>c.name).length+' chords and '+cols.arps.length+' arpeggios detected. Hands split by '+(handMap(raw)?'track':'pitch (middle C)')+'.'+(()=>{const k=cols.flatMap(c=>c.gs).filter(g=>g.fixed).length;return k?' '+k+(k==1?' chord was':' chords were')+' adjusted to a playable stretch.':''})()+''}
 function seek(i){i=Math.max(0,Math.min(cols.length-1,i));pos=cols[i].t-(playing?.8:0);nxt=i;wi=i;metroSync()}
 function stop(){playing=false;$('pp').textContent='Play';wake(false);try{flushPrac()}catch(e){}}
@@ -271,7 +303,7 @@ const KM=[6.35,2.23,3.48,2.33,4.38,4.09,2.52,5.19,2.39,3.66,2.29,2.88],Kn=[6.33,
 function detectKey(ns){const h=Array(12).fill(0);for(const n of ns)h[n.n%12]+=Math.max(.05,n.e-n.s);
  const cor=(a,b)=>{const ma=a.reduce((x,y)=>x+y)/12,mb=b.reduce((x,y)=>x+y)/12;let s=0,x=0,y=0;for(let i=0;i<12;i++){s+=(a[i]-ma)*(b[i]-mb);x+=(a[i]-ma)**2;y+=(b[i]-mb)**2}return s/Math.sqrt(x*y||1)};
  let best={r:0,m:0},bs=-2;for(let r=0;r<12;r++)for(const m of[0,1]){const rot=h.map((_,i)=>h[(i+r)%12]),c=cor(rot,m?Kn:KM);if(c>bs){bs=c;best={r,m}}}return best}
-function apply(){if(exActive){exActive=false;stop()}const r=krange(),ns=xform();cols=build(ns);const ps=ns.map(n=>n.n);
+function apply(){if(exActive){exActive=false;stop()}const r=krange(),ns=xform();cols=build(ns);if(songMarks.length){const lab=t=>{const i=mkAt(t);return i<0?null:trSym(songMarks[i][1],shiftTot)};cols.forEach(c=>{if(c.name){const l=lab(c.t);if(l)c.name=l}});cols.arps.forEach(a=>{const l=lab(cols[a.a].t);if(l)a.name=l})}const ps=ns.map(n=>n.n);
  if(r){lo=r[0];hi=r[1]}else{lo=Math.floor(Math.min(...ps)/12)*12;hi=Math.ceil((Math.max(...ps)+1)/12)*12-1}
  songKey=detectKey(ns);barCol=[];{let j=0;for(const bt of songBars){while(j<cols.length&&cols[j].t<bt-1e-3)j++;barCol.push(j)}}
  const out=r?ns.filter(n=>n.n<r[0]||n.n>r[1]).length:0;let t;
@@ -284,9 +316,9 @@ function apply(){if(exActive){exActive=false;stop()}const r=krange(),ns=xform();
  $('fit').textContent=t;lastCur=-1;if(cols.length){cur=Math.min(cur,cols.length-1);seek(cur)}cofRender()}
 const nameOf=p=>chordName(p)||p.map(nm).join(' ');
 function altTxt(c){return c.gs.filter(g=>g.fixed).map(g=>'<br><i>Adjusted to a playable stretch ('+(g.h?'right':'left')+' hand): '+g.fixed.from.map(nm).join(' ')+' → '+g.fixed.to.map(nm).join(' ')+'.</i>').join('')+c.gs.filter(g=>g.alt).map(g=>'<br><i>'+(simp?'Easier voicing applied, ':'Easier voicing, ')+(g.h?'right':'left')+' hand: '+nameOf(g.alt.p)+' ('+g.alt.p.map(nm).join(' ')+'), '+(g.alt.m0-g.alt.m1>=2?'your hand moves '+Math.round(g.alt.m0-g.alt.m1)+' semitones less from the previous chord':'a smaller reach ('+g.alt.r1+' instead of '+g.alt.r0+' semitones)')+(simp?' (was '+g.alt.from.map(nm).join(' ')+')':'')+'.</i>').join('')}
-function savePrefs(){try{localStorage.setItem('ck_prefs',JSON.stringify({kSel,calib,autoFit,fold,simp,span:maxSpan,echo:echoMode,nn:noteNames,cv:chordView,sp:spd}))}catch(e){}}
+function savePrefs(){try{localStorage.setItem('ck_prefs',JSON.stringify({kSel,calib,autoFit,fold,simp,span:maxSpan,echo:echoMode,nn:noteNames,cv:chordView,sp:spd,ntn,sa:saSel,swf:swFull}))}catch(e){}}
 function syncT(){const t=(id,on,x)=>{const e=$(id);e.textContent=x;e.classList.toggle('on',on)};
- t('af',autoFit,'Auto-fit octaves: '+(autoFit?'on':'off'));t('fo',fold,'Fold outside notes: '+(fold?'on':'off'));t('sp',simp,'Easier voicings: '+(simp?'on':'off'));t('ec',echoMode!=='auto','Sound my notes: '+echoMode);t('vw',chordView,chordView?'Chord view':'Note view');t('nn',noteNames,'Note names: '+(noteNames?'on':'off'))}
+ t('af',autoFit,'Auto-fit octaves: '+(autoFit?'on':'off'));t('fo',fold,'Fold outside notes: '+(fold?'on':'off'));t('sp',simp,'Easier voicings: '+(simp?'on':'off'));t('ec',echoMode!=='auto','Sound my notes: '+echoMode);t('vw',chordView,chordView?'Chord view':'Note view');t('nn',noteNames,'Note names: '+(noteNames?'on':'off'));if($('ntn')){$('ntn').value=ntn;$('sa').value=saSel;$('sa').hidden=$('swf').hidden=ntn==='west';t('swf',swFull,swFull?'Full: Sa Re Ga':'Short: S R G')}}
 /* MIDI keyboard connection */
 let midiA=null;
 function setKb(){const ins=[];if(midiA)midiA.inputs.forEach(i=>{i.onmidimessage=onMsg;if(i.state==='connected')ins.push(i.name||'MIDI device')});
@@ -295,7 +327,7 @@ function setKb(){const ins=[];if(midiA)midiA.inputs.forEach(i=>{i.onmidimessage=
  $('kbt').textContent=connected?'Keyboard connected: '+devName:'No keyboard connected. Plug it in by USB and it will appear here.';
  if(raw.length)apply()}
 function onMsg(m){const[s,n,v]=m.data,h=s&240;
- if(h==144&&v>0){$('ln').textContent='Key: '+nm(n);
+ if(h==144&&v>0){$('ln').textContent='Key: '+nmD(n);
   if(calSt==1){calLo=n;calSt=2;$('fit').textContent='Now press the HIGHEST key on your keyboard.';return}
   if(calSt==2){calib=[Math.min(calLo,n),Math.max(calLo,n)];calSt=0;savePrefs();apply();return}
   held.add(n);if(echoOn())vOn(n,v);perfNote(n)}else if(h==128||h==144){held.delete(n);vOff(n)}}
@@ -339,7 +371,7 @@ function cofRender(){const k=selKey(),S=SC[k.m],rm=k.m?(k.r+3)%12:k.r,i0=MAJ.ind
    g+='<g data-r="'+pc+'" data-m="'+inner+'"><circle cx="'+x+'" cy="'+y+'" r="'+rr+'" fill="'+(tonic?'var(--lh)':'var(--card)')+'" stroke="'+(cl?'var(--lh)':'var(--line)')+'" stroke-width="'+(cl?2.5:1)+'"/><text x="'+x+'" y="'+(y+4)+'" text-anchor="middle" font-size="'+(inner?11:13)+'" font-weight="'+(cl?700:400)+'" fill="'+(tonic?'#fff':'var(--fg)')+'">'+NN[pc]+(inner?'m':'')+'</text></g>'}}
  g+='<text x="150" y="146" text-anchor="middle" font-size="12" fill="var(--mut)">tap a key</text><text x="150" y="162" text-anchor="middle" font-size="13" font-weight="700" fill="var(--fg)">'+NN[k.r]+(k.m?' minor':' major')+'</text></svg>';
  $('cw').innerHTML=g;
- $('ck').textContent='Key: '+NN[k.r]+(k.m?' minor':' major')+(keyOv?' (your choice)':' (detected from the piece)');
+ $('ck').textContent='Key: '+NN[k.r]+(k.m?' minor':' major')+(keyOv?' (your choice)':' (detected from the piece)')+(ntn!=='west'?'. Sa is '+NN[saPc()]+'.':'');if($('sa'))$('sa').options[0].textContent='Sa = song key ('+NN[k.r]+')';
  $('cd').innerHTML=S.off.map((o,i)=>'<button data-r="'+((k.r+o)%12)+'" data-q="'+S.q[i]+'">'+S.rn[i]+' '+dn(k,i)+'</button>').join('')+(keyOv?'<button id="kd">Use detected key</button>':'');
  $('cp').innerHTML=PROGS[k.m].map((p,j)=>'<button data-p="'+j+'">'+p.n+'<br><span class="sm">'+p.d.map(i=>dn(k,i,p.s)).join(' ')+'</span></button>').join('');
  altRender()}
@@ -361,7 +393,7 @@ let progT=[];
 function playProg(list){progT.forEach(clearTimeout);progT=[];let tg=64;list.forEach((c,i)=>progT.push(setTimeout(()=>{tg=pvShow(c.r,c.q,tg,1.1)},i*1000)))}
 function initUI(){
  const ks=$('ks');ks.innerHTML='<option value="auto">Keyboard size: auto</option>'+Object.keys(SIZES).map(k=>'<option value="'+k+'">'+k+' keys</option>').join('');
- try{const p=JSON.parse(localStorage.getItem('ck_prefs')||'null');if(p){kSel=p.kSel||'auto';calib=p.calib||null;autoFit=p.autoFit!==false;fold=!!p.fold;simp=!!p.simp;maxSpan=p.span||12;echoMode=p.echo||'auto';noteNames=!!p.nn;if(p.cv===false)chordView=false;if(['0.25','0.5','0.6','0.75','0.9','1','1.1','1.25'].includes(String(p.sp)))spd=+p.sp}}catch(e){}
+ try{const p=JSON.parse(localStorage.getItem('ck_prefs')||'null');if(p){kSel=p.kSel||'auto';calib=p.calib||null;autoFit=p.autoFit!==false;fold=!!p.fold;simp=!!p.simp;maxSpan=p.span||12;echoMode=p.echo||'auto';noteNames=!!p.nn;if(['west','sargam','both'].includes(p.ntn))ntn=p.ntn;if(p.sa==='auto'||/^([0-9]|1[01])$/.test(String(p.sa)))saSel=String(p.sa);swFull=!!p.swf;if(p.cv===false)chordView=false;if(['0.25','0.5','0.6','0.75','0.9','1','1.1','1.25'].includes(String(p.sp)))spd=+p.sp}}catch(e){}
  ks.value=String(kSel);$('sg').value=String(maxSpan);[...$('spd').options].forEach(o=>{if(+o.value===spd)$('spd').value=o.value});syncT();
  $('lr').innerHTML=NN.map((n,i)=>'<option value="'+i+'">'+n+'</option>').join('');
  ks.onchange=e=>{kSel=e.target.value;calib=null;savePrefs();apply()};
@@ -486,11 +518,11 @@ function exTick(){if(exm!=='timed')return;const bd=exBd();
  while(missPtr<expEv.length&&expEv[missPtr].t+win()<pos){const e=expEv[missPtr++];if(!e.m){e.x=1;exS.streak=0}}}
 function fb(t,k){fbT=t;fbK=k}
 function perfNote(p){lastAct=performance.now();if(!ex||!exActive||!playing)return;
- if(exm==='learn'){const c=cols[wi];if(c&&!c.p.includes(p)){exS.wrong++;exS.cw=1;exS.cwn++;exS.wl.push([c.t,p,c.p.reduce((a,x)=>Math.abs(x-p)<Math.abs(a-p)?x:a,c.p[0])]);exS.streak=0;fb('Wrong note '+nm(p)+'. Expected '+c.p.map(nm).join(' '),0)}return}
+ if(exm==='learn'){const c=cols[wi];if(c&&!c.p.includes(p)){exS.wrong++;exS.cw=1;exS.cwn++;exS.wl.push([c.t,p,c.p.reduce((a,x)=>Math.abs(x-p)<Math.abs(a-p)?x:a,c.p[0])]);exS.streak=0;fb('Wrong note '+nmD(p)+'. Expected '+c.p.map(nmD).join(' '),0)}return}
  const tn=curPos(),w=win();if(tn<cols[0].t-w)return;
  let b=null,bd=1e9;for(const e of expEv)if(!e.m&&!e.x&&e.p===p){const d=Math.abs(tn-e.t);if(d<w&&d<bd){bd=d;b=e}}
  if(b){b.m=1;b.err=(tn-b.t)/spd*1000;exS.streak++;exS.best=Math.max(exS.best,exS.streak);fb((b.err>0?'Late ':'Early ')+Math.abs(Math.round(b.err))+' ms',Math.abs(b.err)<TOL[ex.lvl-1]*.5?1:0)}
- else{let it=null,id=1e9;for(const e of expEv)if(!e.m&&!e.x){const d=Math.abs(tn-e.t);if(d<w&&d<id){id=d;it=e}}exS.wl.push([tn,p,it?it.p:null]);exS.wrong++;exS.streak=0;fb('Extra or wrong note '+nm(p)+(it?'. Expected '+nm(it.p):''),0)}}
+ else{let it=null,id=1e9;for(const e of expEv)if(!e.m&&!e.x){const d=Math.abs(tn-e.t);if(d<w&&d<id){id=d;it=e}}exS.wl.push([tn,p,it?it.p:null]);exS.wrong++;exS.streak=0;fb('Extra or wrong note '+nmD(p)+(it?'. Expected '+nmD(it.p):''),0)}}
 function exLearnClear(){exS.cl.push([wi,exS.cwn]);exS.cwn=0;exS.cols++;if(!exS.cw){exS.clean++;exS.streak++;exS.best=Math.max(exS.best,exS.streak)}else exS.streak=0;exS.cw=0;fb('Chord '+exS.cols+' of '+cols.length+' done',1)}
 function hs(all,h){const d=expEv.filter(e=>(all||e.m||e.x)&&e.h==h);return d.length?100*d.reduce((a,e)=>a+(e.m?tf(e.err):0),0)/d.length:null}
 function exScore(all,hand){if(hand!=null){const v=hs(all,hand);return v==null?null:Math.round(v)}
@@ -594,15 +626,15 @@ function feedback(a){const g=[],f=[],m=a.m,T=a.tol,rng=(b)=>'bar '+b;
   if(m.hit>3&&m.abs<T*.35)g.push('Your timing was tight: '+Math.round(m.abs)+' ms from the beat on average.');
   if(!m.wrong)g.push('No wrong notes.');
   if(a.worst.length)f.push('The bars that cost the most points were '+a.worst.map(b=>'bar '+b+' ('+a.bars[b-1].s+'%)').join(', ')+'. Practise them slowly, one at a time.');
-  if(a.missed.length)f.push('Notes you missed most: '+a.missed.map(x=>nm(x[0])+' ('+x[1]+'×)').join(', ')+'.');
-  if(a.conf.length)f.push('Wrong notes: '+a.conf.map(x=>'you played '+nm(x[0])+' where '+nm(x[1])+' was written ('+x[2]+'×)').join('; ')+'. Check the key and finger.');
+  if(a.missed.length)f.push('Notes you missed most: '+a.missed.map(x=>nmD(x[0])+' ('+x[1]+'×)').join(', ')+'.');
+  if(a.conf.length)f.push('Wrong notes: '+a.conf.map(x=>'you played '+nmD(x[0])+' where '+nmD(x[1])+' was written ('+x[2]+'×)').join('; ')+'. Check the key and finger.');
   if(a.drift)f.push(a.drift.ms>0?'You slowed down by about '+a.drift.ms+' ms over the piece. Keep the metronome on and count ahead.':'You rushed by about '+(-a.drift.ms)+' ms over the piece. Stay relaxed and listen to the click.');
   if(a.halves&&a.halves[0]-a.halves[1]>=10)f.push('You started well ('+a.halves[0]+'%) but faded in the second half ('+a.halves[1]+'%). Practise in shorter sections.');
   else if(a.halves&&a.halves[1]-a.halves[0]>=10)g.push('You warmed up nicely: '+a.halves[0]+'% in the first half, '+a.halves[1]+'% in the second.');
   a.advice.forEach(t=>{if(!/Clean and steady|Not passed yet/.test(t)&&!f.some(x=>x.slice(0,25)===t.slice(0,25)))f.push(t)})}
  else{if(a.learn.clean===a.learn.cols)g.push('Every chord was clean.');else g.push(a.learn.clean+' of '+a.learn.cols+' chords were clean on the first try.');
   if(a.worst.length)f.push('Chords that needed retries were in '+a.worst.map(b=>'bar '+b).join(', ')+'.');
-  if(a.conf.length)f.push('You pressed '+a.conf.map(x=>nm(x[0])+' instead of '+nm(x[1])+' ('+x[2]+'×)').join('; ')+'.')}
+  if(a.conf.length)f.push('You pressed '+a.conf.map(x=>nmD(x[0])+' instead of '+nmD(x[1])+' ('+x[2]+'×)').join('; ')+'.')}
  if(a.prev){const d=a.score-a.prev.s;g.push(d>0?'That is '+d+' points better than your last attempt.':d<0?'That is '+(-d)+' points lower than your last attempt.':'Same score as your last attempt.');
   if(a.mode==='timed'&&a.prev.a!=null&&m.abs<a.prev.a-5)g.push('Your timing is '+Math.round(a.prev.a-m.abs)+' ms tighter than last time.')}
  if(!f.length)f.push(a.score>=85?'Nothing major to fix. Raise the speed or try the next level.':'Slow the speed down and repeat until it feels steady.');
@@ -636,7 +668,7 @@ $('rvb').onclick=e=>{const b=e.target.closest('button');if(!b||!lastAn)return;
  else if(b.dataset.again){if(lastAn.song)songPlay();else exStartId(lastAn.key)}};
 
 /* ---------- polish: onboarding, practice time, backup, install, shortcuts ---------- */
-let noteNames=false,preEx=null,pracDirty=0,nowOv=0,dip=null,lastAct=-1e9;
+let songMarks=[],noteNames=false,preEx=null,pracDirty=0,nowOv=0,dip=null,lastAct=-1e9;
 const dKey=o=>{const x=new Date(nowOv||Date.now());x.setDate(x.getDate()-o);return x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0')+'-'+String(x.getDate()).padStart(2,'0')};
 function tickPractice(dt){if(document.hidden)return;if(performance.now()-lastAct>8000)return;
  P.days=P.days||{};const k=dKey(0);P.days[k]=(P.days[k]||0)+dt;pracDirty+=dt;if(pracDirty>15)flushPrac()}
@@ -648,9 +680,193 @@ function pracRender(){const q=pracStats(),m=x=>x>0&&x<60?'<1':Math.round(x/60);
  $('trsum').textContent='Practice and progress'+(q.st?' · '+q.st+'-day streak':'')+(q.today>=60?' · '+m(q.today)+' min today':'')}
 function restorePre(){if(!preEx)return;wait=preEx.wait;preEx=null;$('wait').textContent='Wait for me: '+(wait?'on':'off');$('wait').classList.toggle('on',wait)}
 function stopEx(){const n=ex?ex.name:'Exercise';exActive=false;stop();exRes='<b>'+esc(n)+'</b> stopped. Nothing was saved.<br><button data-h="retry">Start again</button> <button data-h="close">Close</button>'}
-async function openFile(f){try{const ab=await f.arrayBuffer(),nme=f.name||'song.mid';
- if(/\.(musicxml|xml|mxl|pdf|mscz|mscx)$/i.test(nme)){$('st').textContent='ChordKeys needs a MIDI file (.mid). In MuseScore choose File, Export, then MIDI, and open that file.';return}
- loadBuf(ab,nme);recentSave(nme,ab)}catch(x){$('st').textContent='That file could not be read as MIDI. Pick a .mid or .midi file. In MuseScore use File, Export, then MIDI.'}}
+async function openFile(f){try{const ab=await f.arrayBuffer(),nme=f.name||'song.mid',ext=((nme.match(/\.([a-z0-9]+)$/i)||[])[1]||'').toLowerCase();
+ if(/^(musicxml|xml|mxl)$/.test(ext)){try{await importXml(ab,nme)}catch(x){$('st').textContent=(x&&x.message&&x.message.length<160&&!/^zip$/.test(x.message)?x.message+' ':'')+'That score could not be read. In MuseScore use File, Export, then MusicXML or MIDI, and open that file.'}return}
+ if(/^(txt|cho|crd|pro|chordpro|chopro|text)$/.test(ext)){openChordText(new TextDecoder().decode(ab),nme);return}
+ if(/^(gp|gp3|gp4|gp5|gpx)$/.test(ext)){$('st').textContent='That is a Guitar Pro file (Songsterr). Open it in MuseScore Studio, which is free, then export MIDI or MusicXML and open that here. Or copy the chords into Type chords.';return}
+ if(/^(mscz|mscx)$/.test(ext)){$('st').textContent='MuseScore project files cannot be read directly. In MuseScore use File, Export, then MusicXML or MIDI, and open that file.';return}
+ if(ext==='pdf'){$('st').textContent='A PDF is a picture of the score, so it cannot be read. On the score page choose the MIDI or MusicXML download, or type the chords in Type chords.';return}
+ loadBuf(ab,nme);lastMid=ab;recentSave(nme,ab)}catch(x){$('st').textContent='That file could not be read. Use a .mid, .musicxml or .mxl score, or a .txt chord chart. In MuseScore use File, Export, then MIDI.'}}
+/* ---------- import: MusicXML, typed or pasted chords ---------- */
+const FLN=['C','Db','D','Eb','E','F','Gb','G','Ab','A','Bb','B'],SHN=['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'],PCL={C:0,D:2,E:4,F:5,G:7,A:9,B:11};
+const rootPc=(l,a)=>(PCL[l]+(a==='#'?1:a==='b'?-1:0)+12)%12;
+function parseChordSym(s0){
+ const s=String(s0).trim().replace(/♭/g,'b').replace(/♯/g,'#').replace(/[−–]/g,'-').replace(/[°º]/g,'dim').replace(/ø/g,'m7b5').replace(/[Δ∆]/g,'maj');
+ const m=s.match(/^([A-G])([#b]?)(.*)$/);if(!m||s.length>24)return null;
+ const r=rootPc(m[1],m[2]);let rest=m[3],bass=null;
+ const sl=rest.match(/\/([A-G])([#b]?)$/);if(sl){bass=rootPc(sl[1],sl[2]);rest=rest.slice(0,sl.index)}
+ let minor=false,dim=false,aug=false,sus=0,no3=false,pow=false,sev=null,six=false,fifth=7,ext=[],x;
+ const take=re=>{const q=rest.match(re);if(q){rest=rest.slice(q[0].length);return q}return null};
+ if(take(/^(?:min|mi|m|-)(?!aj)/))minor=true;else if(take(/^dim/))dim=true;else if(take(/^(?:aug|\+)/))aug=true;
+ if(x=take(/^(?:maj|Maj|MAJ|M)(\d*)/)){if(x[1]){sev=11;const n=+x[1];if(n>=9)ext.push(n==9?14:n==11?17:21)}}
+ else if(x=take(/^(\d+)/)){const n=+x[1];
+  if(n==5)pow=true;else if(n==6)six=true;else if(n==69){six=true;ext.push(14)}
+  else if(n==7)sev=dim?9:10;else if(n==9){sev=10;ext.push(14)}else if(n==11){sev=10;ext.push(17)}else if(n==13){sev=10;ext.push(21)}
+  else if(n==2)ext.push(14);else if(n==4)sus=5;else return null}
+ rest=rest.replace(/[()\s]/g,'');
+ while(rest){
+  if(take(/^,/))continue;
+  if(take(/^sus2/))sus=2;else if(take(/^sus4?/))sus=5;
+  else if(x=take(/^add(\d+)/)){const v={2:14,9:14,4:17,11:17,6:9,13:21}[+x[1]];if(v==null)return null;ext.push(v)}
+  else if(take(/^no3/))no3=true;else if(take(/^no5/))fifth=null;
+  else if(x=take(/^(b|#|\+|-)?(5|9|11|13)/)){const a=x[1]||'',n=+x[2];
+   if(n==5)fifth=(a=='b'||a=='-')?6:a?8:7;else{const base=n==9?14:n==11?17:21;ext.push((a=='b'||a=='-')?base-1:a?base+1:base)}}
+  else if(take(/^\/9/))ext.push(14);else if(take(/^alt/)){ext.push(13,15);fifth=6}
+  else return null}
+ const iv=[0];if(!no3&&!pow)iv.push(sus==2?2:sus==5?5:(minor||dim)?3:4);
+ if(fifth!==null){const f=pow?7:fifth===7?(dim?6:aug?8:7):fifth;iv.push(f)}
+ if(six)iv.push(9);if(sev!=null)iv.push(sev);iv.push(...ext);
+ let u=[...new Set(iv.map(v=>v>=24?v-12:v))].sort((a,b)=>a-b);
+ if(u.length>5){const k=u.findIndex(v=>v==7||v==6||v==8);if(k>0)u.splice(k,1)}
+ if(u.length>5&&u.includes(21)&&u.includes(17))u=u.filter(v=>v!=17);
+ return{r,iv:u,bass,sym:s}}
+function trSym(s,sh){if(!sh)return s;const fl=/^([A-G]b|F)/.test(s),N=fl?FLN:SHN,nameOf=pc=>N[((pc+sh)%12+12)%12];
+ return s.replace(/^([A-G])([#b]?)/,(a,l,ac)=>nameOf(rootPc(l,ac))).replace(/\/([A-G])([#b]?)$/,(a,l,ac)=>'/'+nameOf(rootPc(l,ac)))}
+/* a chord chart (Ultimate Guitar style, ChordPro, or plain "C | Am | F | G") -> list of bars */
+function parseChordText(txt,cpb,beats){
+ const out={bars:[],lyr:0,found:0};
+ txt=String(txt).replace(/\[\/?(?:ch|tab)\]/gi,'').replace(/\r/g,'');let prev=null;
+ for(let line of txt.split('\n')){line=line.trim();if(!line||/^\[[^\]]*\]$/.test(line)&&!parseChordSym(line.slice(1,-1).trim()))continue;
+  let items=[],ok=true,inl=[...line.matchAll(/\[([^\]]+)\]/g)].map(m=>m[1].trim());
+  if(inl.length&&inl.some(c=>parseChordSym(c))){items=inl.filter(c=>parseChordSym(c)).map(c=>({c}))}
+  else{
+   let toks=line.replace(/\|:|:\|/g,'|').replace(/\|/g,' | ').replace(/\s+/g,' ').trim().split(' ');
+   const ci=toks.findIndex((t,i)=>i<3&&/^[^|:]+:$/.test(t));if(ci>=0)toks=toks.slice(ci+1);
+   for(let t of toks){if(!t)continue;
+    if(t==='|'){items.push('|');continue}
+    if(/^\(.+\)$/.test(t)&&!/^\(?x?\d+x?\)?$/i.test(t))t=t.slice(1,-1);
+    const rp=t.match(/^\(?(?:x(\d+)|(\d+)x)\)?$/i);if(rp){items.push({rep:+(rp[1]||rp[2])});continue}
+    if(t==='%'){if(prev)items.push({c:prev});continue}
+    if(/^N\.?C\.?$/i.test(t)){items.push({nc:1});continue}
+    if(/^[-–—>·.~]+$/.test(t))continue;
+    if(parseChordSym(t)){items.push({c:t});continue}
+    ok=false;break}}
+  if(!ok||!items.some(i=>i.c)){if(!ok)out.lyr++;continue}
+  const rep=(items.find(i=>i.rep)||{rep:1}).rep,segs=[];let cur=[];
+  const hasBar=items.includes('|');
+  for(const it of items){if(it==='|'){if(cur.length)segs.push(cur);cur=[]}else if(!it.rep){cur.push(it);if(it.c)prev=it.c}}
+  if(cur.length)segs.push(cur);
+  let bars=segs;
+  if(!hasBar){const n=cpb==='beat'?beats:+cpb||1;bars=[];for(let i=0;i<segs[0].length;i+=n)bars.push(segs[0].slice(i,i+n))}
+  for(let r=0;r<Math.min(rep,16);r++)bars.forEach(b=>out.bars.push(b.map(i=>i.nc?{nc:1,sym:'N.C.'}:{sym:i.c,p:parseChordSym(i.c)})));
+  out.found+=items.filter(i=>i.c).length}
+ return out}
+const CSTY={hold:'Held chords with a bass note',pulse:'Pulse: chord on every beat',arp:'Broken chord (arpeggio)',rh:'Right-hand chords only'};
+function chordSong(bars,o){
+ const bq=o.num*4/o.den,notes=[],marks=[];let tg=64,t=0;
+ for(const bar of bars){const D=bq/bar.length;
+  bar.forEach((ch,k)=>{const b0=t+k*D;if(ch.nc)return;const p=ch.p;marks.push([b0,ch.sym]);
+   let v=closeV(p.r,p.iv,tg);while(v[0]<52)v=v.map(x=>x+12);while(v[v.length-1]>81)v=v.map(x=>x-12);tg=v.reduce((a,b)=>a+b,0)/v.length;
+   const bp=p.bass!=null?p.bass:p.r,bs=36+(((bp-36)%12)+12)%12,add=(n,s,e,tr)=>notes.push({n,tr,s,e});
+   if(o.style==='hold'||o.style==='rh'){v.forEach(n=>add(n,b0,b0+D*.97,0));if(o.style==='hold')add(bs,b0,b0+D*.97,1)}
+   else if(o.style==='pulse'){const c=Math.max(1,Math.floor(D+1e-6)),st=D<1?D:1;for(let j=0;j<c;j++){v.forEach(n=>add(n,b0+j*st,b0+j*st+st*.9,0));if(j==0)add(bs,b0,b0+Math.min(2,D)*.95,1);else if(j==2)add(bs+7,b0+2,b0+Math.min(4,D)*.95,1)}}
+   else{add(bs,b0,b0+D*.97,1);const c=Math.max(1,Math.floor(D*2+1e-6)),n=v.length,seq=[];for(let i=0;i<n;i++)seq.push(i);for(let i=n-2;i>0;i--)seq.push(i);
+    for(let i=0;i<c;i++)add(v[seq[i%seq.length]],b0+i*.5,b0+i*.5+.45,0)}});
+  t+=bq}
+ return{notes,marks,tempos:[[0,o.bpm]],ts:[[0,o.num,o.den]],names:{0:'Right hand',1:'Left hand'},end:t}}
+/* write a standard MIDI file (format 1) from quarter-note times */
+function writeMidi(sg){
+ const DV=480,trs=[...new Set(sg.notes.map(n=>n.tr))].sort((a,b)=>a-b),out=[];
+ const vlq=v=>{const b=[v&127];while(v>>=7)b.unshift(v&127|128);return b},w32=v=>[v>>>24&255,v>>>16&255,v>>>8&255,v&255];
+ const txt=(ty,s)=>{const a=[...s].map(c=>c.charCodeAt(0)&127);return[255,ty,...vlq(a.length),...a]};
+ const trk=ev=>{ev.sort((a,b)=>a[0]-b[0]||a[1]-b[1]);const b=[];let pt=0;for(const[tk,,d]of ev){b.push(...vlq(tk-pt),...d);pt=tk}b.push(0,255,47,0);return[0x4d,0x54,0x72,0x6b,...w32(b.length),...b]};
+ const cond=[];(sg.tempos||[[0,120]]).forEach(([q,bpm])=>{const us=Math.round(6e7/bpm);cond.push([Math.round(q*DV),0,[255,81,3,us>>16&255,us>>8&255,us&255]])});
+ (sg.ts||[[0,4,4]]).forEach(([q,nn,dd])=>cond.push([Math.round(q*DV),0,[255,88,4,nn,Math.log2(dd),24,8]]));
+ (sg.marks||[]).forEach(([q,s])=>{if(s)cond.push([Math.round(q*DV),2,txt(6,'ck:'+s)])});
+ const tracks=[trk(cond)];
+ for(const tr of trs){const ev=[];if(sg.names&&sg.names[tr])ev.push([0,0,txt(3,sg.names[tr])]);
+  for(const n of sg.notes)if(n.tr===tr){const a=Math.round(n.s*DV),b=Math.max(a+1,Math.round(n.e*DV)),p=Math.max(0,Math.min(127,n.n));ev.push([a,2,[144,p,80]],[b,1,[128,p,0]])}
+  tracks.push(trk(ev))}
+ const hd=[0x4d,0x54,0x68,0x64,0,0,0,6,0,1,tracks.length>>8,tracks.length&255,DV>>8,DV&255];
+ const all=[...hd];tracks.forEach(t=>all.push(...t));return new Uint8Array(all).buffer}
+/* mini zip reader for .mxl (uses the browser's built-in deflate) */
+async function unzip(ab){const u=new Uint8Array(ab),dv=new DataView(ab);let e=u.length-22;while(e>=0&&dv.getUint32(e,true)!==0x06054b50)e--;if(e<0)throw new Error('zip');
+ const cnt=dv.getUint16(e+10,true);let p=dv.getUint32(e+16,true);const out={};
+ for(let i=0;i<cnt;i++){if(dv.getUint32(p,true)!==0x02014b50)throw new Error('zip');
+  const meth=dv.getUint16(p+10,true),csz=dv.getUint32(p+20,true),nl=dv.getUint16(p+28,true),xl=dv.getUint16(p+30,true),cl=dv.getUint16(p+32,true),off=dv.getUint32(p+42,true),name=new TextDecoder().decode(u.subarray(p+46,p+46+nl));p+=46+nl+xl+cl;
+  const ds=off+30+dv.getUint16(off+26,true)+dv.getUint16(off+28,true),data=u.subarray(ds,ds+csz);
+  out[name]=async()=>{if(meth===0)return data;if(meth===8&&typeof DecompressionStream!=='undefined'){const s=new Blob([data]).stream().pipeThrough(new DecompressionStream('deflate-raw'));return new Uint8Array(await new Response(s).arrayBuffer())}throw new Error('zip')}}
+ return out}
+const XK={major:'',minor:'m',dominant:'7','major-seventh':'maj7','minor-seventh':'m7',diminished:'dim',augmented:'aug','half-diminished':'m7b5','diminished-seventh':'dim7','suspended-fourth':'sus4','suspended-second':'sus2','major-sixth':'6','minor-sixth':'m6','dominant-ninth':'9','major-ninth':'maj9','minor-ninth':'m9','major-minor':'mMaj7',power:'5','dominant-11th':'11','dominant-13th':'13','minor-11th':'m11','major-11th':'maj11','major-13th':'maj13','minor-13th':'m13','augmented-seventh':'7#5',none:'',other:''};
+function parseMusicXml(text){
+ const doc=new DOMParser().parseFromString(text.replace(/^﻿/,''),'application/xml');
+ if(doc.getElementsByTagName('parsererror').length)throw new Error('This file is not valid MusicXML.');
+ const root=doc.documentElement;if(root.nodeName!=='score-partwise')throw new Error(root.nodeName==='score-timewise'?'This MusicXML layout (time-wise) is not supported.':'This does not look like a MusicXML score.');
+ const kid=(e,t)=>{for(const c of e.children)if(c.tagName===t)return c;return null},txt=(e,t)=>{const c=e&&kid(e,t);return c?c.textContent.trim():null};
+ const pn={},pl=kid(root,'part-list');if(pl)for(const sp of pl.children)if(sp.tagName==='score-part')pn[sp.getAttribute('id')]=txt(sp,'part-name')||'Part';
+ const notes=[],tempos=[],ts=[],marks=[],bars=[],staffs={},STEP={C:0,D:2,E:4,F:5,G:7,A:9,B:11},BU={whole:4,half:2,quarter:1,eighth:.5,'16th':.25,'32nd':.125};let pi=0,reps=0;
+ for(const part of root.children){if(part.tagName!=='part')continue;const pid=part.getAttribute('id'),first=pi===0;let div=1,q=0;const pend={};staffs[pi]={name:pn[pid]||'Part '+(pi+1),set:new Set()};
+  for(const ms of part.children){if(ms.tagName!=='measure')continue;const m0=q;let t=q,mx=q,lastS=q;if(first)bars.push(q);
+   const tempoOf=el=>{const sn=el.tagName==='sound'?el:kid(el,'sound');let b=sn&&sn.getAttribute('tempo');if(b&&+b>0)return+b;
+    const mt=el.getElementsByTagName('metronome')[0];if(mt){const pm=parseFloat(txt(mt,'per-minute')),bu=BU[txt(mt,'beat-unit')];if(pm>0&&bu)return pm*bu*(kid(mt,'beat-unit-dot')?1.5:1)}return 0};
+   for(const el of ms.children){const tg=el.tagName;
+    if(tg==='attributes'){const d=+txt(el,'divisions');if(d>0)div=d;const tm=kid(el,'time');if(tm&&first){const b=parseInt(txt(tm,'beats')),bt=parseInt(txt(tm,'beat-type'));if(b>0&&bt>0)ts.push([m0,b,bt])}}
+    else if(tg==='direction'||tg==='sound'){const b=tempoOf(el);if(b&&first)tempos.push([t,b])}
+    else if(tg==='harmony'&&first){const rt=kid(el,'root'),k=kid(el,'kind');if(rt){const st=txt(rt,'root-step'),al=+txt(rt,'root-alter')||0;let kd=k?(XK[k.textContent.trim()]??k.getAttribute('text')):'';if(kd==null)kd='';
+      let s=st+(al>0?'#':al<0?'b':'')+kd;const bs=kid(el,'bass');if(bs){const bl=txt(bs,'bass-step'),ba=+txt(bs,'bass-alter')||0;if(bl)s+='/'+bl+(ba>0?'#':ba<0?'b':'')}if(parseChordSym(s))marks.push([t,s])}}
+    else if(tg==='backup'){t-=(+txt(el,'duration')||0)/div}
+    else if(tg==='forward'){t+=(+txt(el,'duration')||0)/div;mx=Math.max(mx,t)}
+    else if(tg==='barline'){const rp=kid(el,'repeat');if(rp)reps++}
+    else if(tg==='note'){const isCh=!!kid(el,'chord'),dur=(+txt(el,'duration')||0)/div,s=isCh?lastS:t;
+     if(!isCh)lastS=t;
+     if(kid(el,'grace')||kid(el,'cue')){continue}
+     const pit=kid(el,'pitch');
+     if(pit){const o=parseInt(txt(pit,'octave')),stp=STEP[txt(pit,'step')];if(!isNaN(o)&&stp!=null){const n=12*(o+1)+stp+Math.round(parseFloat(txt(pit,'alter'))||0),sf=parseInt(txt(el,'staff'))||1,tr=pi*8+(sf-1);staffs[pi].set.add(sf);
+      const ties=[...el.children].filter(c=>c.tagName==='tie').map(c=>c.getAttribute('type')),key=tr+'|'+n+'|'+(txt(el,'voice')||1);
+      if(ties.includes('stop')&&pend[key]){pend[key].e=s+dur;if(!ties.includes('start'))delete pend[key]}
+      else{const nt={n,tr,s,e:s+dur};notes.push(nt);if(ties.includes('start'))pend[key]=nt}}}
+     if(!isCh)t+=dur;mx=Math.max(mx,t)}
+   }
+   q=Math.max(mx,m0+1e-6)}
+  pi++}
+ if(!ts.length||ts[0][0]>0)ts.unshift([0,4,4]);
+ let off=0;if(bars.length>1){const full=ts[0][1]*4/ts[0][2],l0=bars[1]-bars[0];if(l0<full-1e-3&&l0>0)off=full-l0}
+ const sh=a=>a.map(x=>[x[0]+off,...x.slice(1)]);
+ notes.forEach(n=>{n.s+=off;n.e+=off});
+ const tp=[];tempos.sort((a,b)=>a[0]-b[0]).forEach(x=>{if(!tp.length||tp[tp.length-1][0]!==x[0])tp.push(x)});if(!tp.length||tp[0][0]>0)tp.unshift([0,120]);
+ const names={};Object.keys(staffs).forEach(k=>{const s=staffs[k],arr=[...s.set].sort((a,b)=>a-b);arr.forEach(sf=>names[k*8+sf-1]=s.name+(arr.length>1?' (staff '+sf+')':''))});
+ const t0=ts.map(x=>x.slice());t0.forEach((x,i)=>{if(i>0)x[0]+=off});
+ return{notes,tempos:sh(tp).map((x,i)=>i==0?[0,x[1]]:x),ts:t0,marks:sh(marks),names,reps}}
+async function importXml(ab,nme){
+ let text;const u=new Uint8Array(ab);
+ if(u[0]===0x50&&u[1]===0x4b){const z=await unzip(ab);let rf=null;
+  if(z['META-INF/container.xml']){const m=new TextDecoder().decode(await z['META-INF/container.xml']()).match(/full-path="([^"]+)"/);if(m)rf=m[1]}
+  if(!rf)rf=Object.keys(z).find(k=>/\.(xml|musicxml)$/i.test(k)&&!/^META-INF/i.test(k));
+  if(!rf||!z[rf])throw new Error('There is no score inside that file.');text=new TextDecoder().decode(await z[rf]())}
+ else text=new TextDecoder().decode(u);
+ const sg=parseMusicXml(text);
+ if(!sg.notes.length){$('st').textContent='No notes found in that score. If it is a drum or guitar-tab-only part, try a piano part or export MIDI.';return}
+ const mid=writeMidi(sg),nm2=nme.replace(/\.(mxl|musicxml|xml)$/i,'')+'.mid';
+ loadBuf(mid,nm2);lastMid=mid;recentSave(nm2,mid);
+ if(sg.reps)$('st').textContent+=' Repeat signs were not expanded, so each section plays once.'}
+let lastMid=null,cpTimer=0;
+function chordOpts(){return{bpm:Math.max(30,Math.min(240,+$('cb').value||90)),num:+$('csg').value.split('/')[0],den:+$('csg').value.split('/')[1],style:$('cy').value}}
+function chordPlan(){const o=chordOpts(),pl=parseChordText($('ct').value,$('cpr').value,o.num);return{o,pl}}
+function chordPreview(){const{o,pl}=chordPlan(),el=$('cpv');
+ if(!$('ct').value.trim()){el.textContent='';return}
+ if(!pl.bars.length){el.textContent='No chords found yet. Type chords like  C  Am  F  G  or  C | Am | F | G .';return}
+ const L=[];for(let i=0;i<pl.bars.length;i+=4)L.push('| '+pl.bars.slice(i,i+4).map(b=>b.map(c=>c.sym).join(' ')).join(' | ')+' |');
+ const secs=Math.round(pl.bars.length*o.num*4/o.den*60/o.bpm);
+ el.textContent=L.join('\n')+'\n'+pl.bars.length+(pl.bars.length==1?' bar':' bars')+', about '+secs+' s at '+o.bpm+' BPM'+(pl.lyr?'. Skipped '+pl.lyr+' lyric or text '+(pl.lyr==1?'line':'lines')+'.':'.')}
+function chordBuild(){const{o,pl}=chordPlan();if(!pl.bars.length){chordPreview();$('cpv').scrollIntoView&&$('cpv').scrollIntoView({block:'nearest'});return}
+ if(pl.bars.length>400){$('cpv').textContent='That is more than 400 bars. Please paste a shorter section.';return}
+ const sg=chordSong(pl.bars,o),mid=writeMidi(sg),name=($('cn').value.trim()||'My chords').replace(/[<&"]/g,'');
+ restorePre();loadBuf(mid,name);lastMid=mid;recentSave(name+'.mid',mid);
+ try{localStorage.setItem('ck_chords',JSON.stringify({t:$('ct').value,n:$('cn').value,b:$('cb').value,s:$('csg').value,p:$('cpr').value,y:$('cy').value}))}catch(e){}
+ $('st').textContent=name+': '+pl.bars.length+' bars built from your chords. '+CSTY[o.style]+'. Press Play, or turn on Wait for me.';
+ $('cmid').hidden=false;try{scrollTo({top:0,behavior:'smooth'})}catch(e){}}
+function openChordText(t,name){$('ct').value=t;if(name)$('cn').value=name.replace(/\.[a-z0-9]+$/i,'');$('cho').open=true;chordPreview();chordBuild()}
+function midiDownload(){if(!lastMid)return;const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([lastMid],{type:'audio/midi'}));a.download=(songName||'chordkeys').replace(/[^\w\- ]+/g,'')+'.mid';document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500)}
+const CEX='[Verse]\nC   G   Am  F\nC   G   F   F\n\n[Chorus]\nF   C   G   Am\nF   C   G   G\n\nOr use bars:\n| C | Am7 | Dm7 G7 | C |';
+function initImport(){
+ $('cy').innerHTML=Object.keys(CSTY).map(k=>'<option value="'+k+'">'+CSTY[k]+'</option>').join('');
+ try{const s=JSON.parse(localStorage.getItem('ck_chords')||'null');if(s){$('ct').value=s.t||'';$('cn').value=s.n||'';if(s.b)$('cb').value=s.b;if(s.s)$('csg').value=s.s;if(s.p)$('cpr').value=s.p;if(s.y&&CSTY[s.y])$('cy').value=s.y}}catch(e){}
+ const upd=()=>{clearTimeout(cpTimer);cpTimer=setTimeout(chordPreview,250)};
+ ['ct','cb','csg','cpr'].forEach(i=>$(i).addEventListener('input',upd));['csg','cpr','cy'].forEach(i=>$(i).addEventListener('change',upd));
+ $('cgo').onclick=chordBuild;$('cex').onclick=()=>{$('ct').value=CEX;$('cn').value='Example chords';chordPreview()};
+ $('cclr').onclick=()=>{$('ct').value='';chordPreview()};$('cmid').onclick=midiDownload;
+ $('tch').onclick=()=>{$('cho').open=true;$('cho').scrollIntoView&&$('cho').scrollIntoView({behavior:'smooth',block:'start'});setTimeout(()=>$('ct').focus(),300)};
+ if($('ct').value)chordPreview()}
 const stepAt=()=>playing&&!wait?cur:Math.round(fx());
 function openHelp(){const d=$('help');d.open=true;if(d.scrollIntoView)d.scrollIntoView({behavior:'smooth',block:'start'})}
 function bkDownload(){const d={app:'ChordKeys',v:1,saved:new Date().toISOString(),progress:P,last:lastAn},a=document.createElement('a');
@@ -665,6 +881,9 @@ function initPolish(){
  $('wgo').onclick=()=>{$('welcome').hidden=true;try{localStorage.setItem('ck_seen','1')}catch(e){}};
  $('whp').onclick=()=>{$('wgo').click();openHelp()};$('hbtn').onclick=openHelp;
  $('nn').onclick=()=>{noteNames=!noteNames;syncT();savePrefs()};
+ $('ntn').onchange=e=>{ntn=e.target.value;syncT();savePrefs();lastCur=-1;cofRender()};
+ $('sa').onchange=e=>{saSel=e.target.value;syncT();savePrefs();lastCur=-1;cofRender()};
+ $('swf').onclick=()=>{swFull=!swFull;syncT();savePrefs();lastCur=-1};
  $('vw').addEventListener('click',savePrefs);$('spd').addEventListener('change',savePrefs);
  $('bk').onclick=bkDownload;$('rs').onchange=async e=>{const f=e.target.files[0];if(f)await bkRestore(f);e.target.value=''};
  addEventListener('beforeinstallprompt',e=>{e.preventDefault();dip=e;$('inst').hidden=false});
@@ -677,7 +896,7 @@ function initPolish(){
   else if(e.key==='ArrowRight'&&cols.length){e.preventDefault();seek(Math.min(cols.length-1,stepAt()+1))}
   else if(e.key==='ArrowLeft'&&cols.length){e.preventDefault();seek(Math.max(0,stepAt()-1))}
   else if(e.key==='r'||e.key==='R')$('rw').click();else if(e.key==='m'||e.key==='M')$('mt').click()});
- pracRender()}
+ initImport();pracRender()}
 
 /* ---------- drawing ---------- */
 const sc=$('sc'),kb=$('kb'),sx=sc.getContext('2d'),kx=kb.getContext('2d');let W=0,KW=0,kr=[];const SP=64,TB=100,BB=190,H=4.5;
@@ -706,7 +925,8 @@ function draw(){
     const sh=(s-ps==1&&!psh)?1:0,off=sh?11:0;ps=s;psh=sh;
     const on=held.has(n.n)&&i===cur,rg=krange();sx.fillStyle=on?ok:(rg&&(n.n<rg[0]||n.n>rg[1]))?'#d64545':fg;
     sx.beginPath();sx.ellipse(x+off,y,5.6,4.2,-.3,0,7);sx.fill();
-    if(BLK.includes(n.n%12)){sx.font='13px system-ui';sx.fillText('♯',x-17,y+4)}
+    const sg=ntn!=='west';if(BLK.includes(n.n%12)&&ntn!=='sargam'){sx.font='13px system-ui';sx.fillText('♯',x-17,y+4)}
+    if(sg){sx.fillStyle=on?ok:mut;if(sh)swDraw(sx,n.n,x+off+(n.f?17:9),y+3.5,10,'left');else swDraw(sx,n.n,x+(BLK.includes(n.n%12)&&ntn==='both'?-18:-8),y+3.5,10,'right');sx.fillStyle=fg}
     if(n.f){sx.fillStyle=n.h?rh:lh;sx.font='700 11px system-ui';sx.fillText(n.f,x+off+9,y+4)}}}});
  barCol.forEach((ci,k)=>{if(k&&barCol[k-1]===ci)return;const x=ax+(ci-.5-f)*SP;if(x<-20||x>W+20)return;
   sx.strokeStyle=line;sx.lineWidth=1;sx.beginPath();sx.moveTo(x,TB-36);sx.lineTo(x,BB);sx.stroke();sx.fillStyle=mut;sx.font='10px system-ui';sx.fillText(k+1,x+3,TB-40)});
@@ -716,7 +936,8 @@ function draw(){
  sx.strokeStyle=mut;sx.setLineDash([3,4]);sx.beginPath();sx.moveTo(ax,10);sx.lineTo(ax,224);sx.stroke();sx.setLineDash([]);
  kdraw(C,cols[cur]);
  if(cur!==lastCur){lastCur=cur;const c=cols[cur],ar=(cols.arps||[]).find(a=>cur>=a.a&&cur<=a.b),bn=c?barNum(c.t):0;
-  $('info').innerHTML=c?'<b>'+(c.name||(ar?ar.name+' (arpeggio)':'Single notes'))+'</b>'+(bn?' <span class="sm">bar '+bn+'</span>':'')+'<br>'+c.gs.map(g=>(g.h?'Right hand ':'Left hand ')+g.ns.map(n=>(n.f??'-')+' on '+nm(n.n)).join(', ')).join('<br>')+altTxt(c):'Open a MIDI file to see chords and fingering.';altRender()}}
+  $('info').innerHTML=c?'<b>'+(c.name||(ar?ar.name+' (arpeggio)':'Single notes'))+'</b>'+(ntn!=='west'&&c.name?' <span class="sm">'+chordSw(c.p)+'</span>':'')+(bn?' <span class="sm">bar '+bn+'</span>':'')+'<br>'+c.gs.map(g=>(g.h?'Right hand ':'Left hand ')+g.ns.map(n=>(n.f??'-')+' on '+nmD(n.n)).join(', ')).join('<br>')+altTxt(c):'Open a MIDI file to see chords and fingering.';altRender()}}
+function chordSw(p){const a=analyze(p),r=a?a.r:p[0]%12,pcs=[...new Set(p.map(x=>x%12))].sort((x,y)=>((x-r+12)%12)-((y-r+12)%12));return pcs.map(x=>sw(x+60,true)).join(' ')}
 function kdraw(C,c){
  const lh=C('--lh'),rh=C('--rh'),ok=C('--ok'),kw=C('--kw'),kk=C('--kb'),line=C('--line');
  kx.clearRect(0,0,KW,110);kr=[];let L=lo,Hh=hi;if(pv){const ps=pv.ns.map(x=>x.n);L=Math.min(L,Math.floor(Math.min(...ps)/12)*12);Hh=Math.max(Hh,Math.ceil((Math.max(...ps)+1)/12)*12-1)}
@@ -724,11 +945,13 @@ function kdraw(C,c){
  const w=KW/wh.length,bw=w*.62,tg={};if(pv)pv.ns.forEach(n=>tg[n.n]=n);else if(c)c.gs.forEach(g=>g.ns.forEach(n=>tg[n.n]=n));
  const col=n=>held.has(n)?ok:tg[n]?(tg[n].h?rh:lh):null;
  wh.forEach((n,i)=>{const x=i*w;kr.push({n,x,w,h:110,b:0});kx.fillStyle=col(n)||kw;kx.fillRect(x,0,w-1,110);
-  if(tg[n]&&tg[n].f){kx.fillStyle='#fff';kx.font='700 12px system-ui';kx.textAlign='center';kx.fillText(tg[n].f,x+w/2,88);kx.textAlign='left'}
-  if(n%12==0||noteNames){kx.fillStyle=col(n)?'#fff':'#66727e';kx.font=(noteNames?'10px':'9px')+' system-ui';kx.fillText(noteNames?(n%12==0?nm(n):LN[n%12]):nm(n),x+2,106)}});
+  if(tg[n]&&tg[n].f){kx.fillStyle='#fff';kx.font='700 12px system-ui';kx.textAlign='center';kx.fillText(tg[n].f,x+w/2,ntn==='both'?74:88);kx.textAlign='left'}
+  if(ntn!=='sargam'&&(n%12==0||noteNames)){kx.fillStyle=col(n)?'#fff':'#66727e';kx.font=(noteNames?'10px':'9px')+' system-ui';kx.fillText(noteNames?(n%12==0?nm(n):LN[n%12]):nm(n),x+2,106)}
+  if(ntn!=='west'&&(noteNames||n%12===saPc())){kx.fillStyle=col(n)?'#fff':'#3d6b8a';swDraw(kx,n,x+w/2,ntn==='both'?90:101,11,'center')}});
  for(let n=L;n<=Hh;n++)if(BLK.includes(n%12)){const i=wh.indexOf(n-1);if(i<0)continue;const x=(i+1)*w-bw/2;
   kr.push({n,x,w:bw,h:66,b:1});kx.fillStyle=col(n)||kk;kx.fillRect(x,0,bw,66);
-  if(noteNames&&bw>=14){kx.fillStyle='#a9b8c6';kx.font='8px system-ui';kx.textAlign='center';kx.fillText(NN[n%12],x+bw/2,12);kx.textAlign='left'}
+  if(noteNames&&bw>=14&&ntn!=='sargam'){kx.fillStyle='#a9b8c6';kx.font='8px system-ui';kx.textAlign='center';kx.fillText(NN[n%12],x+bw/2,12);kx.textAlign='left'}
+  if(ntn!=='west'&&bw>=12&&(noteNames||n%12===saPc())){kx.fillStyle=col(n)?'#fff':'#cfe0ee';swDraw(kx,n,x+bw/2,ntn==='both'?27:15,10,'center')}
   if(tg[n]&&tg[n].f){kx.fillStyle='#fff';kx.font='700 11px system-ui';kx.textAlign='center';kx.fillText(tg[n].f,x+bw/2,56);kx.textAlign='left'}}}
 function hit(e){const r=kb.getBoundingClientRect(),x=e.clientX-r.left,y=e.clientY-r.top;let f=null;
  for(const k of kr)if(x>=k.x&&x<k.x+k.w&&y<k.h){if(k.b)return k.n;f=f??k.n}return f}
