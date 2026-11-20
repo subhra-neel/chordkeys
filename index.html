@@ -32,6 +32,10 @@ table{width:100%;border-collapse:collapse;font-size:13px}
 td{padding:6px 4px;border-top:1px solid var(--line)}
 tr{cursor:pointer}
 .sm{font-size:12px;color:var(--mut)}
+.chint{border:1px solid var(--line);border-radius:10px;padding:8px 10px;margin:6px 0;font-size:13px;background:var(--bg);line-height:1.7}
+.chint div{margin:2px 0}.chint span{display:inline-block;min-width:92px;color:var(--mut);font-weight:600}
+.chint code,#cwn code{font:12px ui-monospace,Menlo,monospace;padding:1px 5px;border-radius:5px;border:1px solid var(--line);background:var(--card);white-space:nowrap}
+#cwn{font-size:13px;margin:4px 0;line-height:1.6}#cwn div{border-left:3px solid var(--rh);padding:2px 8px;margin:4px 0}
 #cw svg g{cursor:pointer}
 #hud{background:var(--card);border-radius:12px;padding:10px 12px;margin:6px 0;font-size:14px;line-height:1.5}
 #tdash tr{cursor:default}
@@ -81,16 +85,17 @@ h4{margin:14px 0 4px;font-size:14px}
 </div>
 <details id="cho"><summary>Type or paste chords</summary>
 <div class="sm" style="margin:6px 0">Paste a chord chart from Ultimate Guitar or Songsterr, or type your own. Lyrics are ignored. Use <b>|</b> to mark bars, for example <b>| C | Am7 | Dm7 G7 | C |</b>. Without bar lines, each chord line is split by the &ldquo;Chords per bar&rdquo; setting. <b>x2</b> repeats a line and <b>%</b> repeats the last chord.</div>
-<textarea id="ct" rows="7" spellcheck="false" autocapitalize="off" autocomplete="off" aria-label="Chords" placeholder="C   G   Am  F&#10;| C | Am7 | Dm7 G7 | C |"></textarea>
+<div class="chint" id="chint"><b>How to write chords</b><div><span>Western</span>one letter, any case: <code>C</code> <code>Am</code> <code>g7</code> <code>F/C</code></div><div><span>Sargam</span>full names only: <code>Sa</code> <code>Re</code> <code>Ga</code> <code>Ma</code> <code>Pa</code> <code>Dha</code> <code>Ni</code>, komal <code>re</code> <code>ga</code> <code>dha</code> <code>ni</code>, tivra <code>Ma`</code>. Set <b>Sa =</b> below.</div><div><span>Chord type</span><code>Rem</code> or <code>Re m</code> (minor), <code>Pa7</code>, <code>Sa/Ga</code> (Ga in the bass)</div><div><span>From notes</span><code>Sa-Ga-Pa</code> <code>(Sa Ga Pa)</code> <code>C-E-G</code>: the app names the chord, first note is the bass</div><div><span>Bars</span><code>| Sa | Rem | Pa | Sa |</code>, <code>x2</code> repeats a line, <code>%</code> repeats the last chord</div><div><span>Avoid</span><code>S</code> <code>R</code> <code>M</code> <code>P</code> <code>N</code>: write <code>Sa</code> <code>Re</code> <code>Ma</code> <code>Pa</code> <code>Ni</code>. <code>G</code> and <code>D</code> are Western chords; for sargam write <code>Ga</code> and <code>Dha</code>.</div></div>
+<textarea id="ct" rows="7" spellcheck="false" autocapitalize="off" autocomplete="off" aria-label="Chords" placeholder="Sa | Rem | Pa | Sa&#10;C   G   Am  F"></textarea>
 <div class="bar" style="margin:6px 0">
 <label class="grp">Name <input id="cn" type="text" maxlength="40" placeholder="My chords" style="width:150px"></label>
 <label class="grp">Tempo <input id="cb" type="number" min="30" max="240" value="90" style="width:70px"> BPM</label>
 <select id="csg" aria-label="Time signature"><option value="4/4">4/4</option><option value="3/4">3/4</option><option value="2/4">2/4</option></select>
 <select id="cpr" aria-label="Chords per bar"><option value="1">1 chord per bar</option><option value="2">2 chords per bar</option><option value="beat">1 chord per beat</option></select>
-<select id="cy" aria-label="Playing style"></select>
+<select id="cy" aria-label="Playing style"></select><select id="csa" aria-label="Sa for sargam chords" title="Which key is Sa when you type sargam"><option value="0">Sa = C</option><option value="1">Sa = C♯</option><option value="2">Sa = D</option><option value="3">Sa = E♭</option><option value="4">Sa = E</option><option value="5">Sa = F</option><option value="6">Sa = F♯</option><option value="7">Sa = G</option><option value="8">Sa = A♭</option><option value="9">Sa = A</option><option value="10">Sa = B♭</option><option value="11">Sa = B</option></select>
 </div>
-<div class="bar" style="margin:6px 0"><button id="cgo" class="primary">Build notation</button><button id="cex">Example</button><button id="cclr">Clear</button><button id="cmid" hidden>Download MIDI</button></div>
-<pre id="cpv" class="sm" style="white-space:pre-wrap;margin:4px 0"></pre>
+<div class="bar" style="margin:6px 0"><button id="cgo" class="primary">Build notation</button><button id="cex">Western example</button><button id="cexs">Sargam example</button><button id="cclr">Clear</button><button id="cmid" hidden>Download MIDI</button></div>
+<pre id="cpv" class="sm" style="white-space:pre-wrap;margin:4px 0"></pre><div id="cwn" role="status"></div>
 </details>
 <details id="tools"><summary>Loop, bars and chord sheet</summary>
 <div class="bar"><button id="la">Set loop start</button><button id="lb">Set loop end</button><button id="lp">Loop: off</button><select id="lg" aria-label="Loop gap"><option value="0">Loop gap: none</option><option value="1">Loop gap: 1 s</option><option value="2">Loop gap: 2 s</option><option value="4">Loop gap: 4 s</option></select></div>
@@ -722,33 +727,93 @@ function parseChordSym(s0){
  return{r,iv:u,bass,sym:s}}
 function trSym(s,sh){if(!sh)return s;const fl=/^([A-G]b|F)/.test(s),N=fl?FLN:SHN,nameOf=pc=>N[((pc+sh)%12+12)%12];
  return s.replace(/^([A-G])([#b]?)/,(a,l,ac)=>nameOf(rootPc(l,ac))).replace(/\/([A-G])([#b]?)$/,(a,l,ac)=>'/'+nameOf(rootPc(l,ac)))}
+/* sargam in chord charts. Only full names are sargam: Sa Re Ga Ma Pa Dha Ni.
+   Lower case re ga dha ni = komal (sa ma pa are the same either way). Ma` / M`a / Ma' = tivra Ma.
+   Any single letter is a Western chord: G or g = G chord, D or d = D chord.
+   Join notes with - or + (Sa-Ga-Pa, C-E-G), put them in brackets (Sa Ga Pa) or run sargam together (SaGaPa)
+   and the app names the chord; the first note is the bass. */
+const ACN=['C','Db','D','Eb','E','F','F#','G','Ab','A','Bb','B'];
+function swRoot(t){let m;
+ if(m=t.match(/^(?:[`'̀](?:Ma|MA|ma)|(?:Ma|MA|ma)[`'̀́]|M[`'̀́][aA])/))return[6,m[0].length];
+ if(m=t.match(/^(?:Sa|SA|sa|Re|RE|re|Ga|GA|ga|Ma|MA|ma|Pa|PA|pa|Dha|DHA|dha|Ni|NI|ni)/)){const k=m[0],v={sa:0,re:2,ga:4,ma:5,pa:7,dha:9,ni:11}[k.toLowerCase()];
+  return[/^(re|ga|dha|ni)$/.test(k)?v-1:v,k.length]}
+ return null}
+const swClean=t=>String(t).replace(/[̣̤̇̈]/g,'').replace(/^[.·]+|[.·]+$/g,'');
+function swOnly(t){t=swClean(t);const a=swRoot(t);return a&&a[1]===t.length?a[0]:null}
+/* a Western symbol, with a lower-case root allowed (g = G, am = Am, g/b = G/B) */
+function wSym(t){const u=String(t).replace(/^[a-g]/,c=>c.toUpperCase()).replace(/\/([a-g])([#b♯♭]?)$/,(m,c,x)=>'/'+c.toUpperCase()+x);return parseChordSym(u)?u:null}
+const wNote=t=>{const w=String(t).match(/^([A-Ga-g])([#b♯♭]?)$/);return w?rootPc(w[1].toUpperCase(),w[2].replace('♯','#').replace('♭','b')):null};
+/* one sargam root with an optional chord suffix and /bass -> Western symbol */
+function swSym(t,sa){t=swClean(t);const a=swRoot(t);if(!a)return null;let rest=t.slice(a[1]),bass='';
+ const sl=rest.match(/\/(.+)$/);if(sl){const b=swOnly(sl[1]),w=wNote(sl[1]);if(b==null&&w==null)return null;bass='/'+ACN[b!=null?(sa+b)%12:w];rest=rest.slice(0,sl.index)}
+ if(/^[`'̀]/.test(rest))return null;
+ const sym=ACN[(sa+a[0])%12]+rest+bass;return parseChordSym(sym)?sym:null}
+/* several notes -> a named chord (lowest first) */
+function noteGroup(t,sa){const raw=String(t).replace(/^\((.*)\)$/,'$1');let parts=null;
+ if(/[-+,]/.test(raw))parts=raw.split(/[-+,]/).filter(x=>x);
+ else{const rx=/[`'̀](?:Ma|ma)|(?:Ma|ma)[`'̀]|M[`'̀]a|Sa|sa|Re|re|Ga|ga|Ma|ma|Pa|pa|Dha|dha|Ni|ni/g,m=raw.match(rx);if(m&&m.join('')===raw)parts=m}
+ if(!parts||parts.length<2||parts.length>6)return null;
+ const pcs=[];let swU=0;for(const x of parts){const v=swOnly(x.trim());if(v!=null){pcs.push((sa+v)%12);swU=1;continue}const w=wNote(x.trim());if(w==null)return null;pcs.push(w)}
+ const ns=[];let last=-1;for(const pc of pcs){let n=48+pc;while(n<=last)n+=12;ns.push(n);last=n}
+ const nmx=chordName(ns);if(nmx){const sym=nmx.replace(/♭/g,'b').replace(/♯/g,'#'),pp=parseChordSym(sym);if(pp)return{c:sym,p:pp,typed:raw,grp:1,sw:swU}}
+ return{c:pcs.map(x=>ACN[x]).join('-'),p:{r:pcs[0],iv:[...new Set(ns.map(n=>n-ns[0]))],bass:null,sym:''},typed:raw,grp:1,sw:swU}}
+/* suggest a fix for a token that could not be read, or null if it does not look like a chord */
+const SFULL={S:'Sa',R:'Re',r:'re',M:'Ma',P:'Pa',N:'Ni',n:'ni'};
+function fixPart(x){let m;x=swClean(x);
+ if(m=x.match(/^([SRrMPNn])([`'̀]?)(.*)$/)){const f=SFULL[m[1]]+m[2]+m[3];if(swSym(f,0)||swOnly(f)!=null)return f}
+ const tb=[[/^saa+/i,'Sa'],[/^ree+/i,'Re'],[/^gaa+/i,'Ga'],[/^maa+/i,'Ma'],[/^paa+/i,'Pa'],[/^dhaa+/i,'Dha'],[/^dh(?!a)/i,'Dha'],[/^da(?!d|u|ug)/i,'Dha'],[/^nee+|^nii+/i,'Ni'],[/^sha/i,'Sa']];
+ for(const[re,f]of tb)if(re.test(x)){const g=x.replace(re,/^[a-z]/.test(x)?f.toLowerCase():f);if(swSym(g,0)||swOnly(g)!=null)return g}
+ return null}
+function chordFix(t,sa){t=String(t);const raw=t.replace(/^\((.*)\)$/,'$1');
+ if(/[-+,]/.test(raw)){const ps=raw.split(/([-+,])/),out=ps.map(x=>/^[-+,]$/.test(x)||!x?x:(readTok(x,sa)||swOnly(x)!=null||wNote(x)!=null?x:fixPart(x)));
+  if(out.some((x,i)=>x!==ps[i])||out.some(x=>x&&swOnly(x)!=null))for(let i=0;i<out.length;i++)if(/^[GgDd]$/.test(out[i]))out[i]={G:'Ga',g:'ga',D:'Dha',d:'dha'}[out[i]];
+  if(out.every(x=>x!=null)){const g=out.join('');if(noteGroup(g,sa))return'Write <code>'+escH(g)+'</code>. Single letters are Western notes, so use full swara names.'}
+  return'Each note in a group must be a full swara name (<code>Sa-Ga-Pa</code>) or a Western note (<code>C-E-G</code>).'}
+ const f=fixPart(raw);if(f)return'For sargam write <code>'+escH(f)+'</code>. Single letters are Western chords.';
+ if(/^(?:Sa|Re|Ga|Ma|Pa|Dha|Ni)/i.test(raw)||/^[A-G][#b♯♭]?(?:m|maj|min|dim|aug|sus|add|\d|\/)/.test(raw))return'Check the spelling. Examples: <code>Sa</code> <code>Rem</code> <code>Pa7</code> <code>Sa/Ga</code> <code>C</code> <code>Am</code> <code>G7</code>.';
+ if(/^[A-G][a-z]{0,2}$/.test(raw)&&raw.length<=3)return'Not a chord name. Examples: <code>Sa</code> <code>Ga</code> <code>C</code> <code>Am</code>.';
+ return null}
+const escH=x=>String(x).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+/* read one chart token: sargam (full names only), Western (any single letter), or a group of notes */
+function readTok(t,sa){
+ const g=noteGroup(t,sa);if(g)return g;
+ const x=swSym(t,sa);if(x)return{c:x,typed:t,sw:1};
+ const w=wSym(t);if(w)return w===t?{c:w}:{c:w,typed:t};
+ return null}
 /* a chord chart (Ultimate Guitar style, ChordPro, or plain "C | Am | F | G") -> list of bars */
-function parseChordText(txt,cpb,beats){
- const out={bars:[],lyr:0,found:0};
+function parseChordText(txt,cpb,beats,sa){
+ sa=sa||0;const out={bars:[],lyr:0,found:0,sw:false,sa,warn:[],wl:new Set()};
  txt=String(txt).replace(/\[\/?(?:ch|tab)\]/gi,'').replace(/\r/g,'');let prev=null;
- for(let line of txt.split('\n')){line=line.trim();if(!line||/^\[[^\]]*\]$/.test(line)&&!parseChordSym(line.slice(1,-1).trim()))continue;
-  let items=[],ok=true,inl=[...line.matchAll(/\[([^\]]+)\]/g)].map(m=>m[1].trim());
-  if(inl.length&&inl.some(c=>parseChordSym(c))){items=inl.filter(c=>parseChordSym(c)).map(c=>({c}))}
+ const LS=txt.split('\n');for(let li=0;li<LS.length;li++){let line=LS[li].trim();if(!line||/^\[[^\]]*\]$/.test(line)&&!readTok(line.slice(1,-1).trim(),sa))continue;
+  if(/^(?:tuning|capo|key|tempo|bpm|time|artist|title|album)\s*[:=-]/i.test(line))continue;
+  line=line.replace(/\(([^()]+)\)/g,(m,g)=>/\s/.test(g.trim())&&g.trim().split(/\s+/).every(x=>swOnly(x)!=null||wNote(x)!=null)?'('+g.trim().split(/\s+/).join('+')+')':m);
+  let items=[],ok=true,bad=null,allT=[],inl=[...line.matchAll(/\[([^\]]+)\]/g)].map(m=>m[1].trim());
+  if(inl.length&&inl.some(c=>readTok(c,sa))){items=inl.map(c=>readTok(c,sa)).filter(x=>x)}
   else{
    let toks=line.replace(/\|:|:\|/g,'|').replace(/\|/g,' | ').replace(/\s+/g,' ').trim().split(' ');
    const ci=toks.findIndex((t,i)=>i<3&&/^[^|:]+:$/.test(t));if(ci>=0)toks=toks.slice(ci+1);
    for(let t of toks){if(!t)continue;
     if(t==='|'){items.push('|');continue}
-    if(/^\(.+\)$/.test(t)&&!/^\(?x?\d+x?\)?$/i.test(t))t=t.slice(1,-1);
+    if(/^\(.+\)$/.test(t)&&!/^\(?x?\d+x?\)?$/i.test(t)&&!/[+]/.test(t))t=t.slice(1,-1);
     const rp=t.match(/^\(?(?:x(\d+)|(\d+)x)\)?$/i);if(rp){items.push({rep:+(rp[1]||rp[2])});continue}
-    if(t==='%'){if(prev)items.push({c:prev});continue}
+    if(t==='%'){if(prev)items.push(prev);continue}
+    {const lt=items[items.length-1];if(lt&&lt.sw&&!lt.grp&&/^(?:m|min|mi|maj\d*|M\d+|dim\d*|aug|sus[24]?|\d+|m\d+|add\d+|m?7?b5)$/.test(t)&&parseChordSym(lt.c+t)){items[items.length-1]={c:lt.c+t,typed:lt.typed+' '+t,sw:1};prev=items[items.length-1];continue}}
     if(/^N\.?C\.?$/i.test(t)){items.push({nc:1});continue}
     if(/^[-–—>·.~]+$/.test(t))continue;
-    if(parseChordSym(t)){items.push({c:t});continue}
-    ok=false;break}}
+    {const rt=readTok(t,sa);if(rt){items.push(rt);prev=rt;continue}}
+    bad=t;allT=toks;ok=false;break}}
+  if(!ok&&bad!=null){const tk=allT.filter(x=>x&&x!=='|'),okT=x=>x==='%'||/^\(?(?:x\d+|\d+x)\)?$/i.test(x)||/^N\.?C\.?$/i.test(x)||/^[-–—>·.~]+$/.test(x)||readTok(x,sa),bl=tk.filter(x=>!okT(x)),near=x=>{const r=String(x).replace(/^\((.*)\)$/,'$1');return fixPart(r)!=null||(/[-+,]/.test(r)&&/^Write/.test(chordFix(r,sa)||''))},intent=tk.length-bl.length+bl.filter(near).length;
+   let nb=0;if(intent>=Math.max(1,tk.length*.6))for(const x of bl){const fx=chordFix(x,sa);if(fx){out.warn.push([li+1,x,fx]);nb++}}}
   if(!ok||!items.some(i=>i.c)){if(!ok)out.lyr++;continue}
   const rep=(items.find(i=>i.rep)||{rep:1}).rep,segs=[];let cur=[];
   const hasBar=items.includes('|');
-  for(const it of items){if(it==='|'){if(cur.length)segs.push(cur);cur=[]}else if(!it.rep){cur.push(it);if(it.c)prev=it.c}}
+  for(const it of items){if(it==='|'){if(cur.length)segs.push(cur);cur=[]}else if(!it.rep){cur.push(it);if(it.c)prev=it}}
   if(cur.length)segs.push(cur);
   let bars=segs;
   if(!hasBar){const n=cpb==='beat'?beats:+cpb||1;bars=[];for(let i=0;i<segs[0].length;i+=n)bars.push(segs[0].slice(i,i+n))}
-  for(let r=0;r<Math.min(rep,16);r++)bars.forEach(b=>out.bars.push(b.map(i=>i.nc?{nc:1,sym:'N.C.'}:{sym:i.c,p:parseChordSym(i.c)})));
+  for(let r=0;r<Math.min(rep,16);r++)bars.forEach(b=>out.bars.push(b.map(i=>i.nc?{nc:1,sym:'N.C.'}:{sym:i.c,p:i.p||parseChordSym(i.c),typed:i.typed})));
+  if(items.some(i=>i&&i.sw))out.sw=true;
+  items.forEach(i=>{if(i&&i.c&&!i.sw&&!i.grp&&/^[GDgd](?![#b])/.test(i.typed||i.c))out.wl.add(i.typed||i.c)});
   out.found+=items.filter(i=>i.c).length}
  return out}
 const CSTY={hold:'Held chords with a bass note',pulse:'Pulse: chord on every beat',arp:'Broken chord (arpeggio)',rh:'Right-hand chords only'};
@@ -841,29 +906,36 @@ async function importXml(ab,nme){
  if(sg.reps)$('st').textContent+=' Repeat signs were not expanded, so each section plays once.'}
 let lastMid=null,cpTimer=0;
 function chordOpts(){return{bpm:Math.max(30,Math.min(240,+$('cb').value||90)),num:+$('csg').value.split('/')[0],den:+$('csg').value.split('/')[1],style:$('cy').value}}
-function chordPlan(){const o=chordOpts(),pl=parseChordText($('ct').value,$('cpr').value,o.num);return{o,pl}}
+function chordPlan(){const o=chordOpts(),pl=parseChordText($('ct').value,$('cpr').value,o.num,+$('csa').value||0);return{o,pl}}
 function chordPreview(){const{o,pl}=chordPlan(),el=$('cpv');
+ const W=[];pl.warn.slice(0,6).forEach(w=>W.push('<div><b>Line '+w[0]+':</b> <code>'+escH(w[1])+'</code> was not read. '+w[2]+'</div>'));
+ if(pl.warn.length>6)W.push('<div>'+(pl.warn.length-6)+' more lines need a fix.</div>');
+ if(pl.sw&&pl.wl.size)W.push('<div>Read as Western chords: '+[...pl.wl].slice(0,6).map(x=>'<code>'+escH(x)+'</code>').join(' ')+'. If you meant sargam, write <code>Ga</code> or <code>Dha</code> in full.</div>');
+ $('cwn').innerHTML=$('ct').value.trim()?W.join(''):'';
  if(!$('ct').value.trim()){el.textContent='';return}
- if(!pl.bars.length){el.textContent='No chords found yet. Type chords like  C  Am  F  G  or  C | Am | F | G .';return}
- const L=[];for(let i=0;i<pl.bars.length;i+=4)L.push('| '+pl.bars.slice(i,i+4).map(b=>b.map(c=>c.sym).join(' ')).join(' | ')+' |');
+ if(!pl.bars.length){el.textContent='No chords found yet. Type chords like  C  Am  F  G  or  C | Am | F | G , or in sargam  Sa | Rem | Pa | Sa  or notes like  Sa-Ga-Pa .';return}
+ const L=[];for(let i=0;i<pl.bars.length;i+=4)L.push('| '+pl.bars.slice(i,i+4).map(b=>b.map(c=>c.typed&&c.typed!==c.sym?c.typed+' = '+c.sym:c.sym).join(', ')).join(' | ')+' |');
  const secs=Math.round(pl.bars.length*o.num*4/o.den*60/o.bpm);
- el.textContent=L.join('\n')+'\n'+pl.bars.length+(pl.bars.length==1?' bar':' bars')+', about '+secs+' s at '+o.bpm+' BPM'+(pl.lyr?'. Skipped '+pl.lyr+' lyric or text '+(pl.lyr==1?'line':'lines')+'.':'.')}
+ el.textContent=(pl.sw?'Reading this as sargam with Sa = '+NN[pl.sa]+'.\n':'')+L.join('\n')+'\n'+pl.bars.length+(pl.bars.length==1?' bar':' bars')+', about '+secs+' s at '+o.bpm+' BPM'+(pl.lyr?'. Skipped '+pl.lyr+' lyric or text '+(pl.lyr==1?'line':'lines')+'.':'.')}
 function chordBuild(){const{o,pl}=chordPlan();if(!pl.bars.length){chordPreview();$('cpv').scrollIntoView&&$('cpv').scrollIntoView({block:'nearest'});return}
  if(pl.bars.length>400){$('cpv').textContent='That is more than 400 bars. Please paste a shorter section.';return}
  const sg=chordSong(pl.bars,o),mid=writeMidi(sg),name=($('cn').value.trim()||'My chords').replace(/[<&"]/g,'');
  restorePre();loadBuf(mid,name);lastMid=mid;recentSave(name+'.mid',mid);
- try{localStorage.setItem('ck_chords',JSON.stringify({t:$('ct').value,n:$('cn').value,b:$('cb').value,s:$('csg').value,p:$('cpr').value,y:$('cy').value}))}catch(e){}
- $('st').textContent=name+': '+pl.bars.length+' bars built from your chords. '+CSTY[o.style]+'. Press Play, or turn on Wait for me.';
+ if(pl.sw){keyOv={r:pl.sa,m:0};if(saSel!=='auto')saSel=String(pl.sa);if(ntn==='west')ntn='sargam';syncT();savePrefs();lastCur=-1;cofRender()}
+ try{localStorage.setItem('ck_chords',JSON.stringify({t:$('ct').value,n:$('cn').value,b:$('cb').value,s:$('csg').value,p:$('cpr').value,y:$('cy').value,sa:$('csa').value}))}catch(e){}
+ $('st').textContent=name+': '+pl.bars.length+' bars built from your chords. '+CSTY[o.style]+'. Press Play, or turn on Wait for me.'+(pl.warn.length?' Some chords were not read: see the hints under Type chords.':'');
  $('cmid').hidden=false;try{scrollTo({top:0,behavior:'smooth'})}catch(e){}}
 function openChordText(t,name){$('ct').value=t;if(name)$('cn').value=name.replace(/\.[a-z0-9]+$/i,'');$('cho').open=true;chordPreview();chordBuild()}
 function midiDownload(){if(!lastMid)return;const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([lastMid],{type:'audio/midi'}));a.download=(songName||'chordkeys').replace(/[^\w\- ]+/g,'')+'.mid';document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500)}
+const CEXS='[Sthayi]\nSa | Rem | Pa | Sa\nMa | Pa | Dham | Pa\n\n[Antara]\nMa  Pa  Ga m  Dham\nRe m | Pa7 | Sa | Sa\n\nChords from notes:\n| Sa-Ga-Pa | (Ma Dha Sa) | (Pa Ni Re Ma) | Sa |';
 const CEX='[Verse]\nC   G   Am  F\nC   G   F   F\n\n[Chorus]\nF   C   G   Am\nF   C   G   G\n\nOr use bars:\n| C | Am7 | Dm7 G7 | C |';
 function initImport(){
  $('cy').innerHTML=Object.keys(CSTY).map(k=>'<option value="'+k+'">'+CSTY[k]+'</option>').join('');
- try{const s=JSON.parse(localStorage.getItem('ck_chords')||'null');if(s){$('ct').value=s.t||'';$('cn').value=s.n||'';if(s.b)$('cb').value=s.b;if(s.s)$('csg').value=s.s;if(s.p)$('cpr').value=s.p;if(s.y&&CSTY[s.y])$('cy').value=s.y}}catch(e){}
+ try{const s=JSON.parse(localStorage.getItem('ck_chords')||'null');if(s){$('ct').value=s.t||'';$('cn').value=s.n||'';if(s.b)$('cb').value=s.b;if(s.s)$('csg').value=s.s;if(s.p)$('cpr').value=s.p;if(s.y&&CSTY[s.y])$('cy').value=s.y;if(/^([0-9]|1[01])$/.test(String(s.sa)))$('csa').value=String(s.sa)}else if(saSel!=='auto')$('csa').value=saSel}catch(e){}
  const upd=()=>{clearTimeout(cpTimer);cpTimer=setTimeout(chordPreview,250)};
- ['ct','cb','csg','cpr'].forEach(i=>$(i).addEventListener('input',upd));['csg','cpr','cy'].forEach(i=>$(i).addEventListener('change',upd));
+ ['ct','cb','csg','cpr'].forEach(i=>$(i).addEventListener('input',upd));['csg','cpr','cy','csa'].forEach(i=>$(i).addEventListener('change',upd));
  $('cgo').onclick=chordBuild;$('cex').onclick=()=>{$('ct').value=CEX;$('cn').value='Example chords';chordPreview()};
+ $('cexs').onclick=()=>{$('ct').value=CEXS;$('cn').value='Sargam example';chordPreview()};
  $('cclr').onclick=()=>{$('ct').value='';chordPreview()};$('cmid').onclick=midiDownload;
  $('tch').onclick=()=>{$('cho').open=true;$('cho').scrollIntoView&&$('cho').scrollIntoView({behavior:'smooth',block:'start'});setTimeout(()=>$('ct').focus(),300)};
  if($('ct').value)chordPreview()}
